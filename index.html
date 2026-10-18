@@ -322,7 +322,6 @@ body {
     <div class="tip">Pistol (4, click to equip; click to fire)</div>
   </div>
 </div>
-<div id="multiplayer"><input id="roomCode" maxlength="24" placeholder="Room code" aria-label="Room code"><button id="joinRoom">Join</button><span id="mpStatus">Solo</span></div>
 <div id="multiplayer"><input id="roomCode" maxlength="64" placeholder="Host code" aria-label="Host code"><button id="createRoom">Create</button><button id="joinRoom">Join</button><span id="mpStatus">Solo</span></div>
 
 <div id="toast"></div>
@@ -997,7 +996,6 @@ body {
       setBar();
     }
 
-    function update(dt) {
     function update(dt, remoteOnly) {
       state.flash = Math.max(0, state.flash - dt);
       var e = state.flash > 0 ? 0xaa2222 : 0x000000;
@@ -1129,11 +1127,9 @@ body {
     if (typeof handPistol !== 'undefined') handPistol.visible = pistolEquipped;
   }
   document.getElementById('gunBtn').addEventListener('click', function () { equipPistol(!pistolEquipped); });
-  var playerId = Math.random().toString(36).slice(2), roomChannel = null, roomName = '', peers = {}, peerMeshes = {};
   var playerId = Math.random().toString(36).slice(2), roomPeer = null, roomConnections = {}, roomConnPlayer = {};
   var roomHostConnection = null, roomHostId = '', roomActive = false, isRoomHost = false, peers = {}, peerMeshes = {};
   var mpStatus = document.getElementById('mpStatus');
-  function postRoom(type, extra) { if (!roomChannel) return; var packet = extra || {}; packet.type = type; packet.id = playerId; roomChannel.postMessage(packet); }
   var pendingDummyPose = null, remoteEffects = [];
   var incomingTsuk = { active: false, ownerId: '', x: 0, z: 0, rise: 0, t: 0 };
   var incomingShinra = { active: false, ownerId: '', phase: 'none', t: 0, from: [0, 0, 0], to: [0, 0, 0] };
@@ -1507,11 +1503,6 @@ body {
     }
   }
   function makeRemote(id) {
-    var g = new THREE.Group();
-    var coat = box(1, 1.25, .55, 0x8c65db); coat.position.y = 1.45;
-    var head = box(.8, .8, .8, 0xf5c542); head.position.y = 2.5;
-    var legs = box(.8, 1, .45, 0x202532); legs.position.y = .5;
-    g.add(coat, head, legs); scene.add(g); peerMeshes[id] = g; return g;
     var g = player.clone(true), hue = (parseInt(id.slice(0, 6), 36) || 11) % 100 / 100;
     g.name = 'remote-' + id; g.visible = true;
     g.traverse(function (n) {
@@ -1721,22 +1712,6 @@ body {
     roomPeer.on('connection', attachRoomConnection);
   }
   function joinRoom() {
-    var name = document.getElementById('roomCode').value.trim().toLowerCase();
-    if (!name) { showToast('Enter a room code'); return; }
-    if (roomChannel) roomChannel.close();
-    Object.keys(peerMeshes).forEach(function (id) { scene.remove(peerMeshes[id]); }); peerMeshes = {}; peers = {}; roomName = name;
-    if (!('BroadcastChannel' in window)) { mpStatus.textContent = 'Unavailable'; return; }
-    roomChannel = new BroadcastChannel('blocky-walk-room-' + roomName);
-    roomChannel.onmessage = function (e) {
-      var p = e.data; if (!p || p.id === playerId) return;
-      if (p.type === 'leave') { if (peerMeshes[p.id]) scene.remove(peerMeshes[p.id]); delete peerMeshes[p.id]; delete peers[p.id]; }
-      if (p.type === 'state') { p.seen = Date.now(); peers[p.id] = p; var g = peerMeshes[p.id] || makeRemote(p.id); g.position.set(p.x, p.y, p.z); g.rotation.y = p.facing || 0; }
-      if (p.type === 'shot' && p.targetId === playerId) hurtPlayer(12);
-      var count = Object.keys(peers).length; mpStatus.textContent = count ? 'Players: ' + (count + 1) : 'Room: ' + roomName;
-    };
-    postRoom('state', { x: player.position.x, y: player.position.y, z: player.position.z, facing: facing });
-    setTimeout(function () { postRoom('state', { x: player.position.x, y: player.position.y, z: player.position.z, facing: facing }); }, 100);
-    mpStatus.textContent = 'Room: ' + roomName;
     var hostId = document.getElementById('roomCode').value.trim();
     if (!hostId) { showToast('Enter the host code'); return; }
     stopRoom();
@@ -1750,8 +1725,6 @@ body {
   document.getElementById('createRoom').addEventListener('click', createRoom);
   document.getElementById('joinRoom').addEventListener('click', joinRoom);
   var mpSendT = 0;
-  function syncRoom(dt) { if (!roomChannel) return; mpSendT -= dt; if (mpSendT <= 0) { mpSendT = .06; postRoom('state', { x: player.position.x, y: player.position.y, z: player.position.z, facing: facing }); } }
-  window.addEventListener('beforeunload', function () { postRoom('leave'); if (roomChannel) roomChannel.close(); });
   function syncRoom(dt) {
     if (!roomActive) return;
     mpSendT -= dt;
@@ -1771,8 +1744,6 @@ body {
   function firePlayerGun() {
     if (!pistolEquipped || pistolCooldown > 0) return; pistolCooldown = .22;
     var start = new THREE.Vector3(player.position.x, player.position.y + 1.7, player.position.z);
-    var dir = new THREE.Vector3(aimDir.x, .015, aimDir.z).normalize(), best = 65, targetId = null;
-    Object.keys(peers).forEach(function (id) { var p = peers[id], dx = p.x - start.x, dz = p.z - start.z, along = dx * dir.x + dz * dir.z, side = Math.abs(dx * dir.z - dz * dir.x); if (along > 0 && along < best && side < 1.05 && Math.abs(p.y + 1.5 - start.y) < 2.2) { best = along; targetId = id; } });
     var dir = new THREE.Vector3(aimDir.x, .015, aimDir.z).normalize(), best = 65, targetId = null, hitDummy = false;
     Object.keys(peers).forEach(function (id) {
       var target = roomTargetPosition(peers[id]), dx = target.x - start.x, dz = target.z - start.z;
@@ -1788,7 +1759,6 @@ body {
     }
     var geom = new THREE.BufferGeometry().setFromPoints([start, start.clone().addScaledVector(dir, best)]);
     var trace = new THREE.Line(geom, new THREE.LineBasicMaterial({ color: 0xffe38a })); scene.add(trace); pistolBullets.push({ mesh: trace, t: .09 });
-    if (targetId) postRoom('shot', { targetId: targetId });
     sendAction('Gun', { origin: start.toArray(), direction: dir.toArray(), range: best, radius: 1.05, damage: 12, targetIds: targetId ? [targetId] : [], duration: 0.18 });
     if (!targetId && hitDummy) { dummy.damage(12); spawnSpark(start.clone().addScaledVector(dir, best)); }
   }
@@ -1893,7 +1863,6 @@ body {
   var aimDir = new THREE.Vector3(0, 0, 1);
   var tmpV = new THREE.Vector3();
   var dummyCenter = new THREE.Vector3();
-  var cursorOnDummy = false; // true while the mouse is over the training dummy (the target for Tsukuyomi)
   var cursorOnDummy = false, aimedPeerId = null; // aim target for cursor-locked abilities
 
   function updateAim() {
@@ -2069,7 +2038,6 @@ body {
     bolts.forEach(rollBolt);
 
     var s = { active: false, held: false, phase: '', scale: 0, target: new THREE.Vector3(), linger: 0, tick: 0, boltTimer: 0,
-              carrying: false, carryT: 0, spin: 0, dirX: 0, dirZ: 1, catchT: 0, holdTick: 0 };
               carrying: false, carryT: 0, spin: 0, dirX: 0, dirZ: 1, catchT: 0, holdTick: 0,
               playerTargetId: null, playerHoldT: 0, playerHoldTick: 0 };
 
@@ -2120,7 +2088,6 @@ body {
         var step = TORNADO_SPEED * dt;
         if (d <= step) {
           root.position.x = s.target.x; root.position.z = s.target.z;
-          if (s.carrying) { s.phase = 'carry'; s.carryT = CARRY_TIME; }
           if (s.carrying || s.playerTargetId) { s.phase = 'carry'; s.carryT = CARRY_TIME; }
           else { s.phase = 'linger'; s.linger = TORNADO_LINGER; }
         } else {
@@ -2137,13 +2104,10 @@ body {
         var cl = PLATFORM_HALF - 1.5;
         root.position.x = Math.max(-cl, Math.min(cl, root.position.x + s.dirX * CARRY_SPEED * dt));
         root.position.z = Math.max(-cl, Math.min(cl, root.position.z + s.dirZ * CARRY_SPEED * dt));
-        if (dummy.dead || s.carryT <= 0) {
-          dummy.release(); s.carrying = false; s.phase = 'fade';
         if ((s.carrying && dummy.dead) || s.carryT <= 0) {
           if (s.carrying) dummy.release();
           s.carrying = false; s.playerTargetId = null; s.phase = 'fade';
         } else {
-          dummy.carry(root.position.x, 0.9 + Math.sin(s.carryT * 7) * 0.3, root.position.z,
           if (s.carrying) dummy.carry(root.position.x, 0.9 + Math.sin(s.carryT * 7) * 0.3, root.position.z,
             s.spin, Math.sin(s.spin * 0.7) * 0.25, Math.cos(s.spin * 0.9) * 0.25);
         }
@@ -2189,14 +2153,6 @@ body {
         }
       }
       // Keep a caught dummy spinning inside the funnel while it is held or flying to the target
-      if (s.carrying && (s.phase === 'held' || s.phase === 'travel')) {
-        if (dummy.dead) {
-          dummy.release(); s.carrying = false;
-        } else {
-          s.spin += dt * 11;
-          dummy.carry(root.position.x, 0.9 + Math.sin(s.spin * 0.6) * 0.3, root.position.z,
-            s.spin, Math.sin(s.spin * 0.7) * 0.25, Math.cos(s.spin * 0.9) * 0.25);
-        }
       if ((s.carrying || s.playerTargetId) && (s.phase === 'held' || s.phase === 'travel')) {
         if (s.carrying && dummy.dead) { dummy.release(); s.carrying = false; }
         s.spin += dt * 11;
@@ -2242,7 +2198,6 @@ body {
       fxLight.position.set(root.position.x, 1.5, root.position.z);
       fxLight.intensity = 2.2 * s.scale;
     }
-    return { state: s, begin: begin, release: release, stop: stop, update: update };
     return { root: root, layers: layers, state: s, begin: begin, release: release, stop: stop, update: update };
   })();
 
@@ -2816,7 +2771,6 @@ body {
   var TSUK_DUR = 20;
   var CROSS_LIFT = 1.4;      // how high the target hangs on the cross
   var CLONE_STAB_DMG = 4;     // damage of each stab from the clone
-  var tsuk = { active: false, t: 0, inv: false, tx: 0, tz: 0, rise: 0 };
   var tsuk = { active: false, t: 0, inv: false, tx: 0, tz: 0, rise: 0, targetId: null };
   var tsukClone = null;       // the clone summoned with X during Tsukuyomi
   var abTEl = document.getElementById('abT');
@@ -2900,14 +2854,11 @@ body {
       var target = roomTargetPosition(peers[aimedPeerId]);
       tsuk.tx = target.x; tsuk.tz = target.z; tsuk.targetId = aimedPeerId;
     } else {
-    if (dummy.dead || !cursorOnDummy) { showToast('Put your cursor over a target'); return; }
       if (dummy.dead || !cursorOnDummy) { showToast('Put your cursor over a target'); return; }
       tsuk.tx = dummy.root.position.x; tsuk.tz = dummy.root.position.z; tsuk.targetId = null;
     }
     tsuk.active = true;
     tsuk.t = 0;
-    tsuk.tx = dummy.root.position.x;
-    tsuk.tz = dummy.root.position.z;
     abTEl.classList.add('holding');
     glowT = GLOW_DUR; // the eyes flash
     bleed(1);
@@ -2942,8 +2893,6 @@ body {
   function stopTsukuyomi() {
     if (!tsuk.active) return;
     tsuk.active = false;
-    setInvert(false);
-    dummy.release();
     var wasPlayerTarget = !!tsuk.targetId;
     tsuk.targetId = null;
     setInvert(incomingTsuk.active);
@@ -2963,11 +2912,9 @@ body {
   function updateTsukuyomi(dt) {
     updateClouds(dt);
 
-    tsukRing.visible = mangOn && ((!tsuk.active && cd.c <= 0) || (!ama.active && cd.a <= 0)) && cursorOnDummy && !dummy.dead;
     tsukRing.visible = mangOn && ((!tsuk.active && cd.c <= 0) || (!ama.active && cd.a <= 0)) &&
       (aimedPeerId ? !!peers[aimedPeerId] : cursorOnDummy && !dummy.dead);
     if (tsukRing.visible) {
-      tsukRing.position.set(dummy.root.position.x, 0.08, dummy.root.position.z);
       var ringTarget = aimedPeerId && peers[aimedPeerId] ? roomTargetPosition(peers[aimedPeerId]) : null;
       tsukRing.position.set(ringTarget ? ringTarget.x : dummy.root.position.x, 0.08, ringTarget ? ringTarget.z : dummy.root.position.z);
       var rp = 1 + 0.08 * Math.sin(performance.now() / 120);
@@ -3001,19 +2948,8 @@ body {
     }
     setInvert((tsuk.active && inv) || incomingInv);
     if (!tsuk.active) return;
-    tsuk.t += dt;
-    if (dummy.dead || tsuk.t >= TSUK_DUR) { stopTsukuyomi(); return; }
-
-    // Quick strobe as the genjutsu starts, steady inversion, then a strobe back to normal
-    var left = TSUK_DUR - tsuk.t;
-    var inv;
-    if (tsuk.t < 0.24) inv = Math.floor(tsuk.t / 0.06) % 2 === 0;
-    else if (left < 0.24) inv = Math.floor(left / 0.06) % 2 === 1;
-    else inv = true;
-    setInvert(inv);
 
     // The target hangs on the cross, head drooping, with a slight tremble
-    dummy.carry(tsuk.tx, CROSS_LIFT * rise, tsuk.tz, 0, 0.1 + 0.03 * Math.sin(tsuk.t * 9), 0.02 * Math.sin(tsuk.t * 7));
     if (!tsuk.targetId) dummy.carry(tsuk.tx, CROSS_LIFT * rise, tsuk.tz, 0, 0.1 + 0.03 * Math.sin(tsuk.t * 9), 0.02 * Math.sin(tsuk.t * 7));
 
     // The clone: winds up, thrusts, holds, and pulls back, once every second
@@ -3031,7 +2967,6 @@ body {
       else if (ph < 0.7) { var p = (ph - 0.6) / 0.1; arm = -1.9 + 1.3 * p; lunge = 1.1 * easeOut(p); } // thrust
       else if (ph < 0.85) { arm = -0.6; lunge = 1.1; }                                // blade in the target
       else { var q = (ph - 0.85) / 0.15; arm = -0.6; lunge = 1.1 * (1 - easeOut(q)); } // pull back
-      if (ph >= 0.7 && !cl.hit) { cl.hit = true; dummy.damage(CLONE_STAB_DMG); }
       if (ph >= 0.7 && !cl.hit) {
         cl.hit = true;
         if (tsuk.targetId && tsukTarget) sendAction('Tsukuyomi', { origin: [tsukTarget.x, (tsukTarget.y || 0) + 1.3, tsukTarget.z],
@@ -3048,7 +2983,6 @@ body {
   // ---------------------------------------------------------------- Amaterasu (Z while the Mangekyou is on, cursor on a target)
   // Black flames cover the target for 5 seconds, burning it the whole time
   var AMA_DUR = 5, AMA_TICK = 0.5, AMA_DMG = 4;
-  var ama = { active: false, t: 0, tick: 0, flameAcc: 0 };
   var ama = { active: false, t: 0, tick: 0, flameAcc: 0, targetId: null };
   var abAEl = document.getElementById('abA');
 
@@ -3094,11 +3028,9 @@ body {
     pool.cursor = (pool.cursor + 1) % pool.items.length;
     return p;
   }
-  function spawnBlackFlame() {
   function spawnBlackFlame(pos) {
     var f = nextOf(amaFlames);
     if (pos) { amaPt.copy(pos); amaPt.y += 0.3 + Math.random() * 1.8; }
-    dummy.randomPoint(amaPt);
     else dummy.randomPoint(amaPt);
     f.sp.position.copy(amaPt);
     f.life = f.max = 0.45 + Math.random() * 0.35;
@@ -3114,7 +3046,6 @@ body {
     if (aimedPeerId && peers[aimedPeerId]) {
       ama.targetId = aimedPeerId;
     } else {
-    if (dummy.dead || !cursorOnDummy) { showToast('Put your cursor over a target'); return; }
       if (dummy.dead || !cursorOnDummy) { showToast('Put your cursor over a target'); return; }
       ama.targetId = null;
     }
@@ -3124,7 +3055,6 @@ body {
     abAEl.classList.add('holding');
     glowT = GLOW_DUR; // the eyes flash
     bleed(1);
-    for (var i = 0; i < 90; i++) spawnBlackFlame(); // the target bursts into black flames at once
     var targetPeer = ama.targetId && peers[ama.targetId], target = targetPeer ? roomTargetPosition(targetPeer) : null;
     for (var i = 0; i < 90; i++) {
       if (target) spawnBlackFlame(amaPt.set(target.x, target.y, target.z));
@@ -3143,13 +3073,11 @@ body {
   function updateAmaterasu(dt) {
     if (ama.active) {
       ama.t += dt;
-      if (dummy.dead || ama.t >= AMA_DUR) {
       var amaPeer = ama.targetId && peers[ama.targetId], amaTarget = amaPeer ? roomTargetPosition(amaPeer) : null;
       if ((ama.targetId && !amaTarget) || (!ama.targetId && dummy.dead) || ama.t >= AMA_DUR) {
         stopAmaterasu();
       } else {
         ama.tick += dt;
-        while (ama.tick >= AMA_TICK) { ama.tick -= AMA_TICK; dummy.damage(AMA_DMG); }
         while (ama.tick >= AMA_TICK) {
           ama.tick -= AMA_TICK;
           if (amaTarget) sendAction('Amaterasu', { origin: [amaTarget.x, amaTarget.y + 1, amaTarget.z], mode: 'radial', range: 2.6, radius: 2.6,
@@ -3157,7 +3085,6 @@ body {
           else dummy.damage(AMA_DMG);
         }
         ama.flameAcc += dt * 240;
-        while (ama.flameAcc >= 1) { ama.flameAcc -= 1; spawnBlackFlame(); }
         while (ama.flameAcc >= 1) {
           ama.flameAcc -= 1;
           if (amaTarget) spawnBlackFlame(amaPt.set(amaTarget.x, amaTarget.y, amaTarget.z));
@@ -3298,16 +3225,6 @@ body {
   }
 
   function updateGun(dt, remoteOnly) {
-  function updateGun(dt) {
-    var tb = gunTargetBody();
-    gunTarget.set(tb.position.x, tb.position.y + 1.6, tb.position.z);
-    if (!dummy.dead) dummy.aimAt(gunTarget.x, gunTarget.z);
-    gunT -= dt;
-    if (gunT <= 0) {
-      gunT = GUN.fireInterval;
-      var hx = gunTarget.x - dummy.root.position.x, hz = gunTarget.z - dummy.root.position.z;
-      var hd = Math.sqrt(hx * hx + hz * hz);
-      if (!dummy.dead && !dummy.carried && hd < GUN.range && hd > 1.5) fireBullet();
     if (!remoteOnly) {
       var tb = gunTargetBody();
       gunTarget.set(tb.position.x, tb.position.y + 1.6, tb.position.z);
@@ -3756,7 +3673,6 @@ body {
     scene.add(dsp);
     dusts.push({ sp: dsp, t: 0, life: 1, size: 1, vx: 0, vy: 0, vz: 0 });
   }
-  var dustCursor = 0;
   var dustCursor = 0, nextChibakuDustId = 1;
   function spawnDust(x, y, z, size, life, vx, vy, vz) {
     var d = dusts[dustCursor];
@@ -3772,7 +3688,6 @@ body {
   var cb = {
     holding: false, falling: false, t: 0, spawnAcc: 0, spawned: 0, arrived: 0, radius: 0,
     fallT: 0, from: new THREE.Vector3(), to: new THREE.Vector3(),
-    flying: [], debris: [], cam: 0, shake: 0, wave: 0, crater: 0, waveR: 0
     flying: [], debris: [], cam: 0, shake: 0, wave: 0, crater: 0, waveR: 0,
     netSurfaceAdds: [], netSurfaceRevision: 0, netSurfaceSentAt: 0
   };
@@ -3872,7 +3787,6 @@ body {
     if (!dummy.dead) {
       var dx = dummy.root.position.x - c.x, dz = dummy.root.position.z - c.z;
       if (Math.sqrt(dx * dx + dz * dz) < R + CHIBAKU.hitPadding) {
-        dummy.damage(Math.round(CHIBAKU.minDamage + (CHIBAKU.maxDamage - CHIBAKU.minDamage) * f));
         dummy.damage(impactDamage);
       }
     }
@@ -4147,11 +4061,9 @@ body {
   }
   function releaseTornado() {
     if (!tornado.state.held) return;
-    tornado.release({
     var tornadoEnd = {
       x: player.position.x + aimDir.x * RAVAGER_RANGE,
       z: player.position.z + aimDir.z * RAVAGER_RANGE
-    });
     };
     tornado.release(tornadoEnd);
     sendAction('Revolving Ravager', { origin: [player.position.x, 0, player.position.z], direction: [aimDir.x, 0, aimDir.z],
@@ -4235,7 +4147,6 @@ body {
   CD.st = SHINRA.cooldown;
   var SH_GRAVITY = 30;
 
-  var sh = { held: false, phase: 'none', t: 0, from: new THREE.Vector3(), fromQ: new THREE.Quaternion(),
   var sh = { held: false, phase: 'none', t: 0, targetId: null, playerT: 0, playerFrom: null, from: new THREE.Vector3(), fromQ: new THREE.Quaternion(),
     vel: new THREE.Vector3(), axis: new THREE.Vector3(), wave: 0 };
   var shHand = new THREE.Vector3(), shTo = new THREE.Vector3(), shQ = new THREE.Quaternion(), shQ2 = new THREE.Quaternion();
@@ -4553,7 +4464,6 @@ body {
       var ravagerBob = incomingRavager.phase === 'carry' ? Math.sin(incomingRavager.carryT * 7) : Math.sin(incomingRavager.spin * 0.6);
       incomingTargetBody.position.set(incomingRavager.x, 0.9 + ravagerBob * 0.3, incomingRavager.z);
       vel.set(0, 0, 0); onGround = false;
-    if (dash.active) {
     } else if (dash.active) {
       // Dash: fixed-speed burst along the aimed line, ignores gravity and the dummy's collision
       dash.t += dt;
@@ -4575,7 +4485,6 @@ body {
       }
       if (dash.t >= dash.dur) dash.active = false;
     } else {
-      if (qd.active) {
       if (incomingShinraFlight.active) {
         // Keep the launch velocity until the target lands, as the dummy's knockback arc does.
       } else if (qd.active) {
@@ -4604,7 +4513,6 @@ body {
 
       // Jump + gravity
       if (held('jump') && onGround) { vel.y = JUMP; onGround = false; }
-      vel.y -= GRAVITY * dt;
       vel.y -= incomingShinraFlight.active ? SH_GRAVITY * dt : GRAVITY * dt;
 
       player.position.x += vel.x * dt;
@@ -4655,7 +4563,6 @@ body {
     }
     if (player.position.y < -30) resetPlayer();
 
-    dummy.update(dt);
     dummy.update(dt, roomActive && !isRoomHost);
     tornado.update(dt);
     updateDashTrail(dt);
@@ -4663,7 +4570,6 @@ body {
     updateQFx(dt);
     updateTsukuyomi(dt);
     updateAmaterasu(dt);
-    updateGun(dt);
     updateGun(dt, roomActive && !isRoomHost);
     updateClone(dt);
     updateChibaku(dt);
@@ -4718,7 +4624,6 @@ body {
     }
 
     // Pose
-    player.rotation.y = facing;
     player.rotation.y = incomingRavager.active ? facing + incomingRavager.spin : facing;
     var swing = 0;
     if (moving && onGround && !dash.active) {
@@ -4761,14 +4666,11 @@ body {
       armL.rotation.x = 1.2; armR.rotation.x = -1.2; legL.rotation.x = 0.8; legR.rotation.x = -0.8;
       player.rotation.x = incomingRavager.tiltX; player.rotation.z = incomingRavager.tiltZ;
     } else {
-    lean += ((qd.active && !dash.active ? 0.55 : 0) - lean) * Math.min(1, dt * 18);
-    player.rotation.x = lean;
       lean += ((qd.active && !dash.active ? 0.55 : 0) - lean) * Math.min(1, dt * 18);
       player.rotation.x = lean;
     }
     var rollTarget = dodge.active ? -(dodge.dir.x * Math.cos(facing) - dodge.dir.z * Math.sin(facing)) * DODGE.lean : 0;
     dodge.roll += (rollTarget - dodge.roll) * Math.min(1, dt * 25);
-    player.rotation.z = dodge.roll;
     player.rotation.z = incomingShinra.active ? 0 : dodge.roll;
     updateAvatarPivot(player);
     if (crowClone.active && crowClone.body) {
