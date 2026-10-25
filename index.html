@@ -368,9 +368,22 @@ body {
         <path class="fillme" d="M24 8 C32 12 34 20 28 25 C29 19 26 14 24 8 Z" transform="rotate(120 24 24)"/>
         <path class="fillme" d="M24 8 C32 12 34 20 28 25 C29 19 26 14 24 8 Z" transform="rotate(240 24 24)"/>
       </svg>
-      <span class="key" data-key="mangekyou">F</span>
+        <span class="key" id="mangKeyLabel">Y</span>
     </div>
-    <div class="name" data-name-key="mangekyou">Mangekyou Sharingan</div>
+      <div class="name" id="mangNameLabel">Itachi Mangekyou</div>
+  </div>
+  <div class="ability" id="abF2">
+    <div class="icon">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="18"/>
+        <circle class="fillme" cx="24" cy="24" r="3"/>
+        <path class="fillme" d="M24 24 C30 22 38 24 40 32 C34 28 29 28 24 24 Z" />
+        <path class="fillme" d="M24 24 C30 22 38 24 40 32 C34 28 29 28 24 24 Z" transform="rotate(120 24 24)"/>
+        <path class="fillme" d="M24 24 C30 22 38 24 40 32 C34 28 29 28 24 24 Z" transform="rotate(240 24 24)"/>
+      </svg>
+      <span class="key" data-key="obito mangekyou">U</span>
+    </div>
+    <div class="name">Obito Mangekyou</div>
   </div>
   <div class="ability" id="abV">
     <div class="icon">
@@ -380,6 +393,17 @@ body {
       <span class="key" data-key="clone">V</span>
     </div>
     <div class="name" data-name-key="clone">Clone</div>
+    <div class="cd"></div>
+    <div class="cdtext"></div>
+  </div>
+  <div class="ability" id="abKS" hidden>
+    <div class="icon">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M10 39 L34 8 M7 33 L14 38 M19 29 L43 5 M16 23 L23 28 M5 21 L29 4 M2 15 L9 20"/>
+      </svg>
+      <span class="key" data-key="katana storm">V</span>
+    </div>
+    <div class="name" data-name-key="katana storm">Rinnegan Katana Storm · Hold</div>
     <div class="cd"></div>
     <div class="cdtext"></div>
   </div>
@@ -402,6 +426,19 @@ body {
       <span class="key" data-key="amaterasu">Z</span>
     </div>
     <div class="name" data-name-key="amaterasu">Amaterasu</div>
+    <div class="cd"></div>
+    <div class="cdtext"></div>
+  </div>
+  <div class="ability" id="abK" hidden>
+    <div class="icon">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M24 24 C24 20 29 19 32 22 C36 27 31 34 24 34 C15 34 10 26 14 18 C18 10 30 8 37 14"/>
+        <path d="M37 14 C43 20 42 32 34 38"/>
+        <circle class="fillme" cx="24" cy="24" r="2.6"/>
+      </svg>
+      <span class="key" data-key="long range kamui">Z</span>
+    </div>
+    <div class="name" data-name-key="long range kamui">Long Range Kamui · Hold</div>
     <div class="cd"></div>
     <div class="cdtext"></div>
   </div>
@@ -442,7 +479,7 @@ body {
   // Each key points to the action it does: "key": "action". Change the key on the left to rebind.
   // Keys are the key's character ("g", "1", " " for Space) or its name ("arrowup", "shift", "enter").
   // Give an action several keys by listing it more than once (like "w" and "arrowup" below).
-  // A key can do two actions that never happen together with a list: "c" is Tsukuyomi with the
+  // A key can do two actions that never happen together with a list: X is Tsukuyomi with the
   // Sharingan and Chibaku Tensei with the Rinnegan. The labels on screen update by themselves.
   var KEYS = {
     "w": "forward",
@@ -461,10 +498,12 @@ body {
     "g": "revolving ravager",             // hold (katana)
     "h": ["slayer of goliath", "tsukuyomi clone"], // hold to dash (katana) / summon the clone during Tsukuyomi
     "x": ["tsukuyomi", "chibaku tensei"], // Tsukuyomi (Mangekyou) / hold for Chibaku Tensei (Rinnegan)
-    "z": ["amaterasu", "shinra tensei"],  // Amaterasu (Mangekyou, cursor on a target) / hold for Shinra Tensei (Rinnegan)
+    "z": ["amaterasu", "shinra tensei", "long range kamui"],  // Amaterasu (Itachi) / hold for Shinra Tensei (Rinnegan) / hold for Long Range Kamui (Obito)
     "j": "rinnegan",                      // toggle the Rinnegan
     "t": "sharingan",                     // toggle the Sharingan
-    "y": "mangekyou",                     // toggle the Mangekyou (needs the Sharingan)
+    "y": "itachi mangekyou",              // toggle Itachi Mangekyou (needs the Sharingan)
+    "u": "obito mangekyou",               // toggle Obito Mangekyou (needs the Sharingan)
+    "v": "katana storm",                  // Rinnegan: summon a storm of metal katanas
     "c": "clone"                          // Clone (Sharingan or Rinnegan)
   };
 
@@ -658,6 +697,31 @@ body {
       return new THREE.CanvasTexture(c);
     }
 
+    if (kind === 'obito') {
+      // Obito's Mangekyou: red iris, a small pupil and three thick blades that spiral like a whirlpool
+      var og = g.createRadialGradient(0, 0, 4, 0, 0, 60);
+      og.addColorStop(0, '#ff3b3b'); og.addColorStop(0.7, '#d4141f'); og.addColorStop(1, '#8e0a14');
+      g.fillStyle = og;
+      g.beginPath(); g.arc(0, 0, 60, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#120408'; g.lineWidth = 5;
+      g.beginPath(); g.arc(0, 0, 58, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = '#120408';
+      g.beginPath(); g.arc(0, 0, 9, 0, Math.PI * 2); g.fill();
+      for (var ob = 0; ob < 3; ob++) {
+        var ot = -Math.PI / 2 + ob * Math.PI * 2 / 3;
+        var oA = P(9, ot - 0.3), oB = P(9, ot + 0.9);
+        var oC1 = P(30, ot + 0.5), oC2 = P(46, ot + 1.9), oTip = P(56, ot + 2.15), oC3 = P(34, ot + 1.9);
+        g.beginPath();
+        g.moveTo(oA[0], oA[1]);
+        g.quadraticCurveTo(oC1[0], oC1[1], oC2[0], oC2[1]);
+        g.lineTo(oTip[0], oTip[1]);
+        g.quadraticCurveTo(oC3[0], oC3[1], oB[0], oB[1]);
+        g.closePath();
+        g.fill();
+      }
+      return new THREE.CanvasTexture(c);
+    }
+
     var iris = g.createRadialGradient(0, 0, 4, 0, 0, 60);
     iris.addColorStop(0, '#ff3b3b');
     iris.addColorStop(0.7, '#d4141f');
@@ -686,7 +750,8 @@ body {
     }
     return new THREE.CanvasTexture(c);
   }
-  var sharTex = eyeTexture('sharingan'), mangTex = eyeTexture('mangekyou'), rinnTex = eyeTexture('rinnegan');
+  var sharTex = eyeTexture('sharingan'), mangTex = eyeTexture('mangekyou'), rinnTex = eyeTexture('rinnegan'), obitoTex = eyeTexture('obito');
+  var obitoPeerMat = new THREE.MeshBasicMaterial({ map: obitoTex, transparent: true, opacity: 1, depthWrite: false });
   var eyePlanes = eyes.map(function (eye) {
     function plane(tex, z) {
       var m = new THREE.Mesh(
@@ -1043,9 +1108,19 @@ body {
     setBar();
     return {
       root: root,
+      parts: parts,
       damage: damage,
       update: update,
       applyDamage: damage,
+      // Kamui: the dummy vanishes from the map and comes back at its home spot after `seconds`
+      banish: function (seconds) {
+        state.dead = true;
+        state.deadTimer = seconds;
+        state.carried = false;
+        state.fall = 1;
+        body.visible = false;
+        bar.visible = false;
+      },
       applyNetworkPose: function (p) {
         if (!p) return;
         if (p.op === 'carry') { state.carried = true; root.position.set(p.x, p.y, p.z); body.rotation.set(p.rx, p.ry, p.rz); }
@@ -1156,8 +1231,8 @@ body {
   };
   function currentRoomState() {
     var s = { type: 'state', id: playerId, x: player.position.x, y: player.position.y, z: player.position.z,
-      facing: facing, pistol: pistolEquipped, katana: equipped, hp: playerHp, visible: player.visible,
-      eyeOn: !!eyeOn, mangOn: !!mangOn, rinnOn: !!rinnOn, cloneActive: !!(crowClone && crowClone.active),
+      facing: facing, pistol: pistolEquipped, katana: equipped, hp: playerHp, visible: player.visible && !(kamDim && kamDim.inside), inDim: !!(kamDim && kamDim.inside),
+      eyeOn: !!eyeOn, mangOn: !!mangOn, mangType: mangType, rinnOn: !!rinnOn, cloneActive: !!(crowClone && crowClone.active),
       pose: [armL.rotation.x, armR.rotation.x, legL.rotation.x, legR.rotation.x, player.rotation.x, player.rotation.z] };
     if (s.cloneActive && crowClone.body) s.clonePos = [crowClone.body.position.x, crowClone.body.position.y, crowClone.body.position.z];
     s.cloneFx = localCloneEffectSnapshot();
@@ -1213,6 +1288,8 @@ body {
       list.push({ name: 'Chibaku Tensei', x: ball.position.x, y: ball.position.y, z: ball.position.z,
         radius: Math.max(1.2, cb.radius || 1), visual: chibakuVisual });
     }
+    if (kam && kam.active) list.push({ name: 'Kamui', x: kam.pos.x, y: kam.pos.y, z: kam.pos.z, radius: KAMUI.radius,
+      targetId: kam.kind === 'peer' ? kam.targetId : null, part: kam.partName, t: kam.t, open: kam.open, strength: kam.strength });
     if (sh && sh.targetId && peers[sh.targetId]) {
       var shTarget = roomTargetPosition(peers[sh.targetId]), shToX = player.position.x + aimDir.x * SHINRA.holdDistance,
         shToZ = player.position.z + aimDir.z * SHINRA.holdDistance;
@@ -1222,6 +1299,9 @@ body {
         to: [shToX, 2.2 + 0.12 * Math.sin((sh.playerT || 0) * 3), shToZ],
         caster: [player.position.x, player.position.y + 1.6, player.position.z] });
     } else if (sh && !sh.targetId && (sh.held || sh.phase !== 'none')) list.push({ name: 'Shinra Tensei', x: dummy.root.position.x, y: dummy.root.position.y, z: dummy.root.position.z, radius: 2.3 });
+    if (katanaStorm && katanaStorm.active) list.push({ name: 'Rinnegan Katana Storm',
+      targetId: katanaStorm.targetId, originPos: katanaStorm.originPos.toArray(), targetPos: katanaStorm.targetPos.toArray(),
+      t: katanaStorm.t, stopAt: katanaStorm.stopAt, seed: katanaStorm.seed });
     if (dash && dash.active) list.push({ name: 'Dash', x: player.position.x, y: player.position.y + 1, z: player.position.z, radius: 1.4, from: [dash.start.x, dash.start.y + 1, dash.start.z], to: [player.position.x, player.position.y + 1, player.position.z] });
     if (qd && qd.active) list.push({ name: 'Q Dash', x: player.position.x, y: player.position.y + 1, z: player.position.z, radius: 1.1, from: [qd.start.x, qd.start.y + 1, qd.start.z], to: [player.position.x, player.position.y + 1, player.position.z] });
     return list;
@@ -1344,8 +1424,12 @@ body {
   function syncRemoteAbilities(p) {
     var active = {}, colors = { 'Revolving Ravager': 0xff3048, 'Tsukuyomi': 0x8d5cff, 'Amaterasu': 0x8b233a,
       'Chibaku Tensei': 0x9da7b5, 'Shinra Tensei': 0x72d9ff, 'Dash': 0xff5265, 'Q Dash': 0xd8ecff };
+    var hasKatanaStorm = false;
     (p.abilities || []).forEach(function (a) {
       var key = p.id + '|' + a.name; active[key] = true;
+      if (a.name === 'Rinnegan Katana Storm') {
+        setKatanaStormVisual('remote:' + p.id, a, true); hasKatanaStorm = true; return;
+      }
       var mark = remoteAbilityMarks[key];
       if (!mark) {
         var group = new THREE.Group(), color = colors[a.name] || 0x7cf4ff;
@@ -1354,6 +1438,7 @@ body {
         var beam = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.72, blending: THREE.AdditiveBlending }));
         group.add(beam); scene.add(group); mark = remoteAbilityMarks[key] = { group: group, ring: ring, beam: beam };
       }
+      if (a.name === 'Kamui') { mark.group.visible = false; return; }
       mark.ring.position.set(a.x, 0.07, a.z); mark.ring.scale.setScalar(Math.max(0.7, a.radius || 1.5));
       mark.beam.visible = !!(a.from && a.to);
       if (mark.beam.visible) {
@@ -1405,6 +1490,13 @@ body {
         syncRemoteChibaku(mark, a.visual || {});
       }
     });
+    var kamA = (p.abilities || []).filter(function (a) { return a.name === 'Kamui'; })[0];
+    if (kamA) {
+      var rk = remoteKamui[p.id];
+      if (!rk) rk = remoteKamui[p.id] = { pos: new THREE.Vector3(kamA.x, kamA.y, kamA.z), tpos: new THREE.Vector3(), open: 0, topen: 0, strength: 0, tstrength: 0 };
+      rk.tpos.set(kamA.x, kamA.y, kamA.z); rk.topen = kamA.open || 0; rk.tstrength = kamA.strength || 0;
+    } else delete remoteKamui[p.id];
+    if (!hasKatanaStorm) removeKatanaStormVisual('remote:' + p.id);
     Object.keys(remoteAbilityMarks).forEach(function (key) { if (key.indexOf(p.id + '|') === 0 && !active[key]) removeRemoteAbilityMark(key); });
   }
   function roomPlayerCount() { return Object.keys(peers).length + 1; }
@@ -1454,6 +1546,7 @@ body {
     postRoom('action', packet);
   }
   function drawRemoteEffect(p) {
+    if (p.name === 'Rinnegan Katana Storm') return; // the shared swords are rendered from its live ability snapshot
     var colors = { 'Katana': 0xff4050, 'Gun': 0xffe38a, 'Revolving Ravager': 0xff3048, 'Dash': 0xff5265,
       'Q Dash': 0xd8ecff, 'Tsukuyomi': 0x8d5cff, 'Amaterasu': 0x151015, 'Chibaku Tensei': 0x9da7b5,
       'Shinra Tensei': 0x72d9ff, 'Teleport': 0x5fe8ff, 'Clone': 0xff4050, 'Impact': 0xff3048 };
@@ -1526,7 +1619,9 @@ body {
     if (g) { scene.remove(g); if (g.userData.cloneAvatar) scene.remove(g.userData.cloneAvatar); }
     clearRemoteCrowEffects(id);
     if (remoteCloneBars[id]) { scene.remove(remoteCloneBars[id]); delete remoteCloneBars[id]; }
-    delete peerMeshes[id]; delete peers[id]; clearRemoteAbilityMarks(id);
+    removeKatanaStormVisual('remote:' + id);
+    delete peerMeshes[id]; delete peers[id]; clearRemoteAbilityMarks(id); delete remoteKamui[id];
+    if (kamIncoming.owner === id) kamIncoming.owner = null;
   }
   function applyRemoteAppearance(g, p) {
     var cloneBody = p.cloneFx && p.cloneFx.body, showClone = !!((p.cloneActive && p.clonePos) || cloneBody);
@@ -1561,7 +1656,11 @@ body {
     function setFace(root) {
       root.traverse(function (n) {
         if (n.name.indexOf('player-sharingan-') === 0) { n.visible = !!p.eyeOn && !p.mangOn; n.material.opacity = 1; }
-        else if (n.name.indexOf('player-mangekyou-') === 0) { n.visible = !!p.mangOn; n.material.opacity = 1; }
+        else if (n.name.indexOf('player-mangekyou-') === 0) {
+          if (!n.userData.itMat) n.userData.itMat = n.material;
+          n.material = p.mangType === 'obito' ? obitoPeerMat : n.userData.itMat;
+          n.visible = !!p.mangOn; n.material.opacity = 1;
+        }
         else if (n.name.indexOf('player-rinnegan-') === 0) { n.visible = !!p.rinnOn; n.material.opacity = 1; }
         else if (n.name.indexOf('player-eye-glow-') === 0) n.visible = !!p.eyeOn;
         else if (n.name.indexOf('player-eye-streak-') === 0) n.visible = !!p.eyeOn;
@@ -1577,6 +1676,18 @@ body {
       if (incomingRavager.ownerId === p.id) incomingRavager.active = false;
       removeRemoteAvatar(p.id); updateRoomStatus(); return;
     }
+    if (p.type === 'dummyBanish') {
+      if (isRoomHost) dummy.banish(Math.max(1, Number(p.seconds) || 5));
+      return;
+    }
+    if (p.type === 'kamuiSuck') {
+      if (p.targetId === playerId) enterKamuiDimension(p.seconds);
+      return;
+    }
+    if (p.type === 'kamuiDrop') {
+      if (p.targetId === playerId) kamDropBlock(p.kind);
+      return;
+    }
     if (p.type === 'dummyDamage') {
       if (isRoomHost) dummy.applyDamage(Math.max(0, Number(p.amount) || 0));
       return;
@@ -1585,6 +1696,9 @@ body {
       if (isRoomHost && p.dummyPose) dummy.applyNetworkPose(p.dummyPose);
       if (!isRoomHost && p.dummy) dummy.applyNetworkState(p.dummy);
       p.seen = Date.now(); peers[p.id] = p; var isNewRemote = !peerMeshes[p.id], g = peerMeshes[p.id] || makeRemote(p.id);
+      var incomingKamState = (p.abilities || []).filter(function (a) { return a.name === 'Kamui' && a.targetId === playerId; })[0];
+      if (incomingKamState) { kamIncoming.owner = p.id; kamIncoming.part = incomingKamState.part || 'player-torso'; kamIncoming.t = incomingKamState.t || 0; }
+      else if (kamIncoming.owner === p.id) kamIncoming.owner = null;
       var incomingTsukState = (p.abilities || []).filter(function (a) { return a.name === 'Tsukuyomi' && a.targetId === playerId; })[0];
       if (incomingTsukState) {
         incomingTsuk.active = true; incomingTsuk.ownerId = p.id; incomingTsuk.x = incomingTsukState.x;
@@ -1680,6 +1794,7 @@ body {
   function clearRemotePlayers() {
     Object.keys(peerMeshes).forEach(function (id) { var g = peerMeshes[id]; scene.remove(g); if (g.userData.cloneAvatar) scene.remove(g.userData.cloneAvatar); });
     peerMeshes = {}; peers = {};
+    Object.keys(katanaStormVisuals).forEach(function (key) { if (key.indexOf('remote:') === 0) removeKatanaStormVisual(key); });
     incomingTsuk.active = false; incomingTsuk.ownerId = '';
     incomingShinra.active = false; incomingShinra.ownerId = '';
     incomingRavager.active = false; incomingRavager.ownerId = '';
@@ -1768,8 +1883,8 @@ body {
 
   // Combat tuning
   var ATK_DUR = 0.28, ATK_COOLDOWN = 0.36, MELEE_RANGE = 3.6, MELEE_DAMAGE = 8;
-  var CD = { z: 6, x: 8, c: 14, a: 12, v: 8, ct: 10, st: 8 };
-  var cd = { z: 0, x: 0, c: 0, a: 0, v: 0, ct: 0, st: 0 };
+  var CD = { z: 6, x: 8, c: 14, a: 12, v: 8, ct: 10, st: 8, k: 6 };
+  var cd = { z: 0, x: 0, c: 0, a: 0, v: 0, ct: 0, st: 0, k: 0 };
   // Q: quick dash in the direction you are moving (or facing), spammable with a short delay
   var Q_DIST = 10, Q_DUR = 0.18, Q_CD = 0.3;
   var qd = { active: false, t: 0, cd: 0, fade: 0, side: 1, dir: new THREE.Vector3(0, 0, 1), start: new THREE.Vector3() };
@@ -2644,11 +2759,12 @@ body {
     a: { card: document.getElementById('abA'), cd: document.querySelector('#abA .cd'), txt: document.querySelector('#abA .cdtext'), last: -1 },
     v: { card: document.getElementById('abV'), cd: document.querySelector('#abV .cd'), txt: document.querySelector('#abV .cdtext'), last: -1 },
     ct: { card: document.getElementById('abCT'), cd: document.querySelector('#abCT .cd'), txt: document.querySelector('#abCT .cdtext'), last: -1 },
-    st: { card: document.getElementById('abST'), cd: document.querySelector('#abST .cd'), txt: document.querySelector('#abST .cdtext'), last: -1 }
+    st: { card: document.getElementById('abST'), cd: document.querySelector('#abST .cd'), txt: document.querySelector('#abST .cdtext'), last: -1 },
+    k: { card: document.getElementById('abK'), cd: document.querySelector('#abK .cd'), txt: document.querySelector('#abK .cdtext'), last: -1 }
   };
 
   function updateCooldownUI() {
-    ['z', 'x', 'c', 'a', 'v', 'ct', 'st'].forEach(function (k) {
+    ['z', 'x', 'c', 'a', 'v', 'ct', 'st', 'k'].forEach(function (k) {
       var r = cd[k] / CD[k];
       var u = ui[k];
       if (r !== u.last) {
@@ -2682,9 +2798,9 @@ body {
     slotBtn.blur();
   });
 
-  // Slot 2: Sharingan. The eyes turn into painted Sharingan with a quick red flash. F toggles Mangekyou
-  // (the eyes spin into the new pattern, flash again, and blood runs down the face).
-  var eyeOn = false, mangOn = false;
+  // Slot 2: Sharingan. Y toggles Itachi Mangekyou.
+  // The eyes spin into the selected pattern, flash, and bleed down the face.
+  var eyeOn = false, mangOn = false, mangType = 'itachi'; // mangType: 'itachi' (Y) or 'obito' (U)
   var eyeAnim = null;            // current eye animation: { mode, t, dur, out, inn }
   var glowT = 0, GLOW_DUR = 0.4; // split-second red glow
   var bloodPhase = 'off', bloodT = 0;       // 'off' -> 'run' (bleeding) -> 'fade' -> 'off'
@@ -2696,6 +2812,20 @@ body {
   var slotBtn2 = document.getElementById('slotBtn2');
   var abilitiesEyeEl = document.getElementById('abilitiesEye');
   var abFEl = document.getElementById('abF');
+  var abF2El = document.getElementById('abF2');
+  var abKEl = document.getElementById('abK');
+  function syncMangekyouCard() {
+    var name = abFEl.querySelector('.name');
+    var key = document.getElementById('mangKeyLabel');
+    if (name) name.textContent = 'Itachi Mangekyou';
+    if (key) key.textContent = keyLabel('itachi mangekyou');
+    var key2 = abF2El.querySelector('.key');
+    if (key2) key2.textContent = keyLabel('obito mangekyou');
+    var abilityName = document.querySelector('#abA .name');
+    if (abilityName) abilityName.textContent = 'Amaterasu (' + keyLabel('amaterasu') + ')';
+    if (abAEl) abAEl.title = 'Amaterasu';
+  }
+  syncMangekyouCard();
 
   function easeOut(p) { return 1 - Math.pow(1 - p, 3); }
   function easeOutBack(p) { return 1 + 2.70158 * Math.pow(p - 1, 3) + 1.70158 * Math.pow(p - 1, 2); }
@@ -2717,6 +2847,7 @@ body {
     bloodPhase = 'off';
     bloodMat.opacity = 1;
     abFEl.classList.remove('holding');
+    abF2El.classList.remove('holding');
     syncTsuk();
     bloods.forEach(function (b) { b.len = 0; });
     if (on) {
@@ -2746,9 +2877,31 @@ body {
     bloodMat.opacity = 1;
   }
 
-  function toggleMangekyou() {
+  function setMangTexture() {
+    eyePlanes.forEach(function (pl) { pl.mang.material.map = mangType === 'obito' ? obitoTex : mangTex; pl.mang.material.needsUpdate = true; });
+  }
+  function toggleMangekyou(type) {
+    type = type || 'itachi';
     if (!eyeOn || (eyeAnim && eyeAnim.mode === 'switch')) return;
+    if (mangOn && mangType !== type) {
+      // Itachi <-> Obito: the new pattern spins in over the old one
+      mangType = type;
+      setMangTexture();
+      eyeAnim = { mode: 'switch', t: 0, dur: 0.75, out: 'shar', inn: 'mang' };
+      eyePlanes.forEach(function (pl) {
+        pl.shar.visible = true; pl.shar.material.opacity = 0;
+        pl.mang.visible = true; pl.mang.material.opacity = 0;
+      });
+      glowT = GLOW_DUR;
+      playSoundSharingan();
+      bleed(BLOOD_RUN, BLOOD_RATE);
+      abFEl.classList.toggle('holding', mangType === 'itachi');
+      abF2El.classList.toggle('holding', mangType === 'obito');
+      syncTsuk();
+      return;
+    }
     mangOn = !mangOn;
+    if (mangOn) { mangType = type; setMangTexture(); }
     eyeAnim = { mode: 'switch', t: 0, dur: 0.75, out: mangOn ? 'shar' : 'mang', inn: mangOn ? 'mang' : 'shar' };
     eyePlanes.forEach(function (pl) {
       pl.shar.visible = true;
@@ -2763,7 +2916,8 @@ body {
       bloodPhase = 'fade'; // switching back early: let the blood fade right away
       bloodT = bloodRun;
     }
-    abFEl.classList.toggle('holding', mangOn);
+    abFEl.classList.toggle('holding', mangOn && mangType === 'itachi');
+    abF2El.classList.toggle('holding', mangOn && mangType === 'obito');
     syncTsuk();
   }
 
@@ -2849,7 +3003,7 @@ body {
   }
 
   function startTsukuyomi() {
-    if (!mangOn || tsuk.active || cd.c > 0 || tornado.state.carrying) return;
+    if (!mangOn || mangType !== 'itachi' || tsuk.active || cd.c > 0 || tornado.state.carrying) return;
     if (aimedPeerId && peers[aimedPeerId]) {
       var target = roomTargetPosition(peers[aimedPeerId]);
       tsuk.tx = target.x; tsuk.tz = target.z; tsuk.targetId = aimedPeerId;
@@ -2904,15 +3058,20 @@ body {
 
   // The Tsukuyomi card is only shown while the Mangekyou is on
   function syncTsuk() {
-    abTEl.hidden = !mangOn;
-    abAEl.hidden = !mangOn;
-    if (!mangOn) stopTsukuyomi();
+    syncMangekyouCard();
+    var itachiOn = mangOn && mangType === 'itachi', obitoOn = mangOn && mangType === 'obito';
+    abTEl.hidden = !itachiOn;
+    abAEl.hidden = !itachiOn;
+    abKEl.hidden = !obitoOn;
+    if (!itachiOn) stopTsukuyomi();
+    if (!itachiOn) stopAmaterasu();
+    if (!obitoOn) stopKamui();
   }
 
   function updateTsukuyomi(dt) {
     updateClouds(dt);
 
-    tsukRing.visible = mangOn && ((!tsuk.active && cd.c <= 0) || (!ama.active && cd.a <= 0)) &&
+    tsukRing.visible = mangOn && mangType === 'itachi' && ((!tsuk.active && cd.c <= 0) || (!ama.active && cd.a <= 0)) &&
       (aimedPeerId ? !!peers[aimedPeerId] : cursorOnDummy && !dummy.dead);
     if (tsukRing.visible) {
       var ringTarget = aimedPeerId && peers[aimedPeerId] ? roomTargetPosition(peers[aimedPeerId]) : null;
@@ -3042,7 +3201,7 @@ body {
   }
 
   function startAmaterasu() {
-    if (!mangOn || ama.active || cd.a > 0) return;
+    if (!mangOn || mangType !== 'itachi' || ama.active || cd.a > 0) return;
     if (aimedPeerId && peers[aimedPeerId]) {
       ama.targetId = aimedPeerId;
     } else {
@@ -3106,6 +3265,586 @@ body {
       f.sp.scale.set(s * (0.85 + 0.15 * Math.sin(p * 30 + i)), s * 2.2, 1);
       f.sp.material.opacity = Math.min(1, p / 0.12) * (1 - p);
     }
+  }
+
+
+  // ---------------------------------------------------------------- Long Range Kamui (Z while the Obito Mangekyou is on)
+  // Hold Z with the cursor on something: a vortex opens on the exact spot (a body part, the floor, a cloud, the sky).
+  // It bends the space behind it (a screen-space warp) and slowly sucks everything into a tiny black center.
+  // Hold it on a target long enough and the target is pulled into the Kamui dimension.
+  var KAMUI = {
+    cooldown: 1,        // seconds before you can cast it again (starts when you let go)
+    maxHold: 20,        // the vortex closes by itself after this long
+    radius: 3,        // size of the vortex in the world
+    suckTime: 1.6,     // how slowly space gets pulled in (bigger = slower)
+    pull: 1.0,          // how strongly space is pulled into the center (1 = gentle, 5 = extreme)
+    twist: 0,         // how much the pulled space spirals around the center
+    spin: 0.1,          // how fast the spiral rotates
+    openTime: 0.35,     // seconds the vortex takes to open
+    closeTime: 0.45,    // seconds the vortex takes to collapse after you let go
+    banishAfter: 2.0,   // hold this long on a target and it gets pulled in and erased
+    banishTime: 10,    // seconds the erased target stays gone (players spend this long in the Kamui dimension)
+    particles: 140      // dust and rubble spiraling into the center
+  };
+  window.game.kamui = KAMUI;
+  CD.k = KAMUI.cooldown;
+  var kam = { active: false, closing: false, banished: false, autoClose: 0, t: 0, close: 0, pos: new THREE.Vector3(), open: 0, strength: 0,
+    kind: 'ground', targetId: null, partName: null, partObj: null, partOrig: null, cloud: null, offset: new THREE.Vector3() };
+  var kamTmpA = new THREE.Vector3(), kamTmpB = new THREE.Vector3();
+  var KAM_PARTS = ['player-arm-left', 'player-arm-right', 'player-leg-left', 'player-leg-right', 'player-head', 'player-torso'];
+  var remoteKamui = {};                                   // vortices other players are casting
+  var kamIncoming = { owner: null, part: null, t: 0, obj: null, orig: null }; // a vortex someone is casting on me
+
+  // Offscreen render target + a full-screen pass that warps what was rendered
+  var kamRT = null;
+  try {
+    var kamPR = renderer.getPixelRatio();
+    kamRT = new THREE.WebGLRenderTarget(Math.max(2, Math.floor(window.innerWidth * kamPR)), Math.max(2, Math.floor(window.innerHeight * kamPR)),
+      { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat });
+  } catch (err) { kamRT = null; }
+  var kamV = [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()];
+  var kamUniforms = {
+    tScene: { value: null },
+    uV: { value: kamV },
+    uVN: { value: 0 },
+    uAspect: { value: 1 },
+    uPull: { value: KAMUI.pull },
+    uTwist: { value: KAMUI.twist },
+    uTime: { value: 0 }
+  };
+  var kamMat = new THREE.ShaderMaterial({
+    uniforms: kamUniforms,
+    depthTest: false, depthWrite: false,
+    vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: [
+      'precision highp float;',
+      'varying vec2 vUv;',
+      'uniform sampler2D tScene;',
+      'uniform vec4 uV[3];',            // per vortex: xy = center (uv), z = radius, w = strength
+      'uniform float uVN, uAspect, uPull, uTwist, uTime;',
+      'vec2 warp(vec2 uv, vec4 v, float f) {',
+      '  vec2 d = uv - v.xy; d.x *= uAspect;',
+      '  float R = max(v.z, 0.0001);',
+      '  float x = length(d) / R;',
+      '  if (x >= 1.0 || v.z <= 0.001) return uv;',
+      '  float s = clamp(v.w, 0.0, 1.0);',
+      '  float a = atan(d.y, d.x);',
+      '  float xx = max(x + f * 0.10 * s * (1.0 - x), 0.0001);',
+      '  float srcX = pow(xx, 1.0 / (1.0 + uPull * s));',   // pulls farther-away space in toward the center
+      '  float fall = 1.0 - xx;',
+      '  float ang = a - uTwist * s * fall * fall * (1.0 + 2.0 * (1.0 - xx)) - uTime * 0.9 * s * fall + f * 0.25 * s * fall;',
+      '  vec2 sd = vec2(cos(ang), sin(ang)) * srcX * R;',
+      '  sd.x /= uAspect;',
+      '  return clamp(v.xy + sd, vec2(0.001), vec2(0.999));',
+      '}',
+      'void main() {',
+      '  vec3 col = vec3(0.0);',
+      '  for (int i = 0; i < 8; i++) {',      // several taps along the spiral smear the picture into curved streaks
+      '    float f = float(i) / 7.0 - 0.5;',
+      '    vec2 uv = vUv;',
+      '    for (int k = 0; k < 3; k++) { if (float(k) >= uVN) break; uv = warp(uv, uV[k], f); }',
+      '    col += texture2D(tScene, uv).rgb;',
+      '  }',
+      '  col /= 8.0;',
+      '  for (int k = 0; k < 3; k++) {',
+      '    if (float(k) >= uVN) break;',
+      '    vec4 v = uV[k];',
+      '    vec2 d = vUv - v.xy; d.x *= uAspect;',
+      '    float x = length(d) / max(v.z, 0.0001);',
+      '    if (x < 1.0 && v.z > 0.001) {',
+      '      float s = clamp(v.w, 0.0, 1.0);',
+      '      float a = atan(d.y, d.x);',
+      // dark curved lines winding into the center, like the pull lines in the manga
+      '      float spiral = sin(a * 5.0 + log(max(x, 0.001)) * 7.0 * (0.4 + s) - uTime * 2.2 * s);',
+      '      float lines = smoothstep(0.93, 1.0, spiral) * (1.0 - x) * 0.45 * s;',
+      '      col *= 1.0 - lines;',
+      '      float g = dot(col, vec3(0.299, 0.587, 0.114));',
+      '      col = mix(col, vec3(g) * 0.7, (1.0 - x) * 0.5 * s);',
+      // the tiny black center
+      '      float core = (0.05 + 0.12 * s * s) * (0.9 + 0.1 * sin(uTime * 9.0));',
+      '      col = mix(col, vec3(0.0), 1.0 - smoothstep(core * 0.55, core * 1.5, x));',
+      '    }',
+      '  }',
+      '  gl_FragColor = vec4(col, 1.0);',
+      '}'
+    ].join('\n')
+  });
+  var kamScene = new THREE.Scene(), kamCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  var kamQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), kamMat);
+  kamQuad.frustumCulled = false;
+  kamScene.add(kamQuad);
+
+  // Debris spiraling into the center (drawn in the world, always facing the camera)
+  var kamPts = null, kamPtData = [];
+  (function () {
+    var n = KAMUI.particles, pos = new Float32Array(n * 3);
+    for (var i = 0; i < n; i++) kamPtData.push({ a: Math.random() * 6.283, r: 0.2 + Math.random() * 1.0, sp: 0.6 + Math.random() * 1.2 });
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    kamPts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x26211f, size: 0.13, transparent: true, opacity: 0.85, depthWrite: false, fog: false }));
+    kamPts.frustumCulled = false;
+    kamPts.visible = false;
+    scene.add(kamPts);
+  })();
+  var kamNdc = new THREE.Vector3(), kamNdc2 = new THREE.Vector3(), kamRight = new THREE.Vector3(), kamUp = new THREE.Vector3();
+
+  // Floor suction: a dark hole in the floor and chunks of grass torn up and spiraled into the vortex
+  var kamHole = new THREE.Mesh(new THREE.CircleGeometry(1, 40),
+    new THREE.MeshBasicMaterial({ color: 0x000000, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+  kamHole.rotation.x = -Math.PI / 2; kamHole.visible = false; scene.add(kamHole);
+  var kamChunks = [];
+  (function () {
+    var mats = [new THREE.MeshLambertMaterial({ color: 0x6fbf5a }), new THREE.MeshLambertMaterial({ color: 0x57a047 })];
+    for (var i = 0; i < 36; i++) {
+      var m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mats[i % 2]);
+      m.visible = false; scene.add(m);
+      kamChunks.push({ m: m, a: Math.random() * 6.283, r: 0, r0: 1, size: 0.2 + Math.random() * 0.35, life: Math.random() });
+    }
+  })();
+
+  // ---- What's under the cursor: a dummy / player body part, a cloud, the floor, or the sky
+  function kamuiPick() {
+    camera.updateMatrixWorld();
+    raycaster.setFromCamera(mouseNDC, camera);
+    var best = null, bd = Infinity;
+    function consider(kind, dist, point, extra) {
+      if (dist >= bd) return;
+      bd = dist; best = extra || {}; best.kind = kind; best.point = point.clone();
+    }
+    if (!dummy.dead) {
+      dummy.root.updateMatrixWorld(true);
+      var hs = raycaster.intersectObjects(dummy.parts, false);
+      if (hs.length) consider('dummy', hs[0].distance, hs[0].point, { obj: hs[0].object });
+      else {
+        var bp = null, bpd = 1.7;
+        dummy.parts.forEach(function (m) {
+          m.getWorldPosition(kamTmpA);
+          var dd = raycaster.ray.distanceToPoint(kamTmpA);
+          if (dd < bpd) { bpd = dd; bp = m; }
+        });
+        if (bp) { bp.getWorldPosition(kamTmpA); consider('dummy', kamTmpA.distanceTo(raycaster.ray.origin), kamTmpA, { obj: bp }); }
+      }
+    }
+    Object.keys(peers).forEach(function (id) {
+      var g = peerMeshes[id];
+      if (!g || !g.visible || peers[id].visible === false) return;
+      g.updateMatrixWorld(true);
+      var hits = raycaster.intersectObject(g, true).filter(function (h) { return !h.object.isSprite && h.object.visible; });
+      if (hits.length) {
+        var o = hits[0].object, part = 'player-torso';
+        while (o) { if (KAM_PARTS.indexOf(o.name) !== -1) { part = o.name; break; } o = o.parent; }
+        consider('peer', hits[0].distance, hits[0].point, { id: id, part: part });
+      } else {
+        var t = roomTargetPosition(peers[id]);
+        kamTmpA.set(t.x, t.y + 1.2, t.z);
+        if (raycaster.ray.distanceToPoint(kamTmpA) < 1.8) consider('peer', kamTmpA.distanceTo(raycaster.ray.origin), kamTmpA, { id: id, part: 'player-torso' });
+      }
+    });
+    clouds.forEach(function (c) {
+      if (!c.g.visible) return;
+      c.g.updateMatrixWorld(true);
+      var h = raycaster.intersectObject(c.g, true);
+      if (h.length) consider('cloud', h[0].distance, h[0].point, { cloud: c });
+    });
+    if (raycaster.ray.intersectPlane(groundPlane, kamTmpB)) {
+      var dx = kamTmpB.x - player.position.x, dz = kamTmpB.z - player.position.z, dd = Math.sqrt(dx * dx + dz * dz);
+      if (dd > MAX_AIM) { kamTmpB.x = player.position.x + dx / dd * MAX_AIM; kamTmpB.z = player.position.z + dz / dd * MAX_AIM; }
+      kamTmpB.y = 0.7;
+      consider('ground', raycaster.ray.origin.distanceTo(kamTmpB) + 0.01, kamTmpB, {});
+    }
+    if (!best) { kamTmpA.copy(raycaster.ray.origin).addScaledVector(raycaster.ray.direction, 70); consider('sky', 70, kamTmpA, {}); }
+    return best;
+  }
+
+  function kamuiAnchor() {
+    if (kam.kind === 'dummy' && !dummy.dead) kam.pos.copy(dummy.root.position).add(kam.offset);
+    else if (kam.kind === 'peer') { var g = peerMeshes[kam.targetId]; if (g) kam.pos.copy(g.position).add(kam.offset); }
+    else if (kam.kind === 'cloud' && kam.cloud) kam.pos.copy(kam.cloud.g.position).add(kam.offset);
+  }
+
+  function kamResetPart() {
+    if (kam.partObj && kam.partOrig) { kam.partObj.position.copy(kam.partOrig.pos); kam.partObj.scale.copy(kam.partOrig.scale); }
+    kam.partObj = null; kam.partOrig = null;
+  }
+  // The aimed body part shrinks into the vortex point
+  function kamApplyPart(pp) {
+    if (kam.kind === 'peer' && !kam.partObj) {
+      var g = peerMeshes[kam.targetId];
+      var o = g && g.getObjectByName(kam.partName);
+      if (o) { kam.partObj = o; kam.partOrig = { pos: o.position.clone(), scale: o.scale.clone() }; }
+    }
+    var obj = kam.partObj, orig = kam.partOrig;
+    if (!obj || !orig) return;
+    var sc = Math.max(0.02, 1 - pp * pp);
+    obj.scale.set(orig.scale.x * sc, orig.scale.y * sc, orig.scale.z * sc);
+    if (kam.kind === 'dummy' && obj.parent) {
+      obj.position.lerpVectors(orig.pos, obj.parent.worldToLocal(kamTmpA.copy(kam.pos)), pp * pp);
+    }
+  }
+
+  function startKamui() {
+    if (!mangOn || mangType !== 'obito' || kam.active || cd.k > 0 || !kamRT || kamDim.inside) return;
+    var pk = kamuiPick();
+    kam.kind = pk.kind; kam.pos.copy(pk.point);
+    kam.targetId = null; kam.partName = null; kam.cloud = null; kamResetPart();
+    if (pk.kind === 'dummy') {
+      kam.partObj = pk.obj; kam.partOrig = { pos: pk.obj.position.clone(), scale: pk.obj.scale.clone() };
+      kam.offset.copy(kam.pos).sub(dummy.root.position);
+    } else if (pk.kind === 'peer') {
+      kam.targetId = pk.id; kam.partName = pk.part;
+      kam.offset.copy(kam.pos).sub(peerMeshes[pk.id].position);
+    } else if (pk.kind === 'cloud') {
+      kam.cloud = pk.cloud; kam.offset.copy(kam.pos).sub(pk.cloud.g.position);
+    }
+    kam.banished = false; kam.autoClose = 0;
+    kam.active = true; kam.closing = false; kam.t = 0; kam.close = 0; kam.open = 0; kam.strength = 0;
+    abKEl.classList.add('holding');
+    glowT = GLOW_DUR;
+    bleed(1);
+  }
+
+  function releaseKamui() {
+    if (!kam.active || kam.closing) return;
+    kam.closing = true;
+    kam.close = 0;
+    cd.k = CD.k; // the cooldown starts once you let go
+    abKEl.classList.remove('holding');
+  }
+
+  function stopKamui() {
+    if (!kam.active) return;
+    kamResetPart();
+    kam.active = false; kam.closing = false;
+    kamPts.visible = false;
+    abKEl.classList.remove('holding');
+  }
+
+  // Clouds, floor chunks and the part of me that's being sucked in: updated every frame
+  function kamWorldUpdate(dt) {
+    var pulling = kam.active && !kam.closing, i;
+    for (i = kamHoles.length - 1; i >= 0; i--) {
+      var kh = kamHoles[i]; kh.t -= dt;
+      if (kh.t <= 0) { scene.remove(kh.m); kh.m.geometry.dispose(); kh.m.material.dispose(); kamHoles.splice(i, 1); }
+    }
+    // Clouds near a vortex cast at the sky or on a cloud get dragged in, shrink and vanish for a while
+    var cloudAim = kam.active && (kam.kind === 'cloud' || kam.kind === 'sky');
+    for (i = 0; i < clouds.length; i++) {
+      var c = clouds[i];
+      if (c.goneT > 0) {
+        c.goneT -= dt;
+        if (c.goneT <= 0) { c.g.position.copy(c.home); c.g.scale.set(1, 1, 1); c.g.visible = true; c.suck = 0; c.goneT = 0; }
+        continue;
+      }
+      var inRange = false;
+      if (cloudAim && pulling) {
+        var cd2 = c.g.position.distanceTo(kam.pos), reach = KAMUI.radius * 4 + 8;
+        if (cd2 < reach) {
+          if (!c.suck) c.home = c.g.position.clone();
+          inRange = true;
+          c.suck = Math.min(1, (c.suck || 0) + dt * (0.08 + kam.strength * 0.7) * (1.3 - cd2 / reach));
+          c.g.position.lerp(kam.pos, Math.min(1, dt * c.suck * 2.5));
+        }
+      }
+      if (!inRange && c.suck > 0) c.suck = Math.max(0, c.suck - dt * 0.6);
+      if (c.suck > 0) {
+        var csc = Math.max(0.02, 1 - c.suck * c.suck);
+        c.g.scale.set(csc, csc, csc);
+        if (c.suck >= 0.985) { c.g.visible = false; c.goneT = KAMUI.banishTime; if (inRange) kamSendObject('cloud'); }
+      }
+    }
+    // Floor: a growing hole and torn-up chunks spiraling into the point
+    var floorOn = kam.active && kam.kind === 'ground' && kam.open > 0.02;
+    kamHole.visible = floorOn;
+    if (floorOn) {
+      kamHole.position.set(kam.pos.x, 0.04, kam.pos.z);
+      kamHole.scale.setScalar(Math.max(0.01, KAMUI.radius * 0.5 * kam.strength * kam.open));
+    }
+    for (i = 0; i < kamChunks.length; i++) {
+      var ch = kamChunks[i];
+      if (!floorOn) { ch.m.visible = false; ch.r = 0; continue; }
+      if (ch.r <= 0.12) {
+        ch.r0 = KAMUI.radius * (0.5 + Math.random() * 1.1) * kam.open; ch.r = ch.r0; ch.a = Math.random() * 6.283;
+        ch.size = 0.2 + Math.random() * 0.35;
+      }
+      var prog = 1 - ch.r / Math.max(ch.r0, 0.01);
+      ch.r -= dt * (0.5 + 3 * kam.strength + prog * 2);
+      ch.a += dt * (1.5 + prog * 5);
+      ch.m.visible = true;
+      ch.m.position.set(kam.pos.x + Math.cos(ch.a) * ch.r, Math.max(0.15, prog * kam.pos.y + 0.1), kam.pos.z + Math.sin(ch.a) * ch.r);
+      ch.m.rotation.set(ch.a * 2, ch.a, 0);
+      ch.m.scale.setScalar(ch.size * Math.max(0.1, 1 - prog * 0.8));
+    }
+    // A vortex someone else is casting on me: my aimed body part shrinks
+    if (kamIncoming.owner && !kamDim.inside) {
+      var po = kamIncoming.obj;
+      if (!po) {
+        po = player.getObjectByName(kamIncoming.part);
+        if (po) { kamIncoming.obj = po; kamIncoming.orig = po.scale.clone(); }
+      }
+      if (po) {
+        var ip = Math.min(1, kamIncoming.t / (KAMUI.banishAfter * 0.85)), isc = Math.max(0.02, 1 - ip * ip);
+        po.scale.set(kamIncoming.orig.x * isc, kamIncoming.orig.y * isc, kamIncoming.orig.z * isc);
+      }
+    } else if (kamIncoming.obj) {
+      kamIncoming.obj.scale.copy(kamIncoming.orig); kamIncoming.obj = null;
+    }
+  }
+
+  function updateKamui(dt) {
+    kamWorldUpdate(dt);
+    kamDimUpdate(dt);
+    if (!kam.active) return;
+    if (!kam.closing) {
+      kam.t += dt;
+      if (kam.t >= KAMUI.maxHold) releaseKamui();
+    } else {
+      kam.close += dt;
+      if (kam.close >= KAMUI.closeTime) { stopKamui(); return; }
+    }
+    kamuiAnchor();
+    // A body part in the vortex shrinks into it; held long enough, the whole target is pulled in
+    if ((kam.kind === 'dummy' || kam.kind === 'peer') && !kam.banished) {
+      if (kam.kind === 'peer' && (!peers[kam.targetId] || peers[kam.targetId].visible === false)) { releaseKamui(); }
+      var pp = Math.min(1, kam.t / (KAMUI.banishAfter * 0.85));
+      if (kam.closing) pp = Math.max(0, pp - kam.close / KAMUI.closeTime);
+      kamApplyPart(pp);
+      if (!kam.closing && kam.t >= KAMUI.banishAfter) {
+        kam.banished = true; kam.autoClose = 0.5;
+        if (kam.kind === 'dummy') {
+          kamResetPart();
+          dummy.banish(KAMUI.banishTime);
+          if (roomActive && !isRoomHost) postRoom('dummyBanish', { seconds: KAMUI.banishTime });
+          showToast('Erased for ' + KAMUI.banishTime + ' seconds', 2200);
+        } else {
+          postRoom('kamuiSuck', { targetId: kam.targetId, seconds: KAMUI.banishTime });
+          if (kamStock.length) kamFlushStock(kam.targetId);
+          showToast('Sucked into the Kamui dimension for ' + KAMUI.banishTime + ' seconds', 2400);
+        }
+      }
+    }
+    if (kam.kind === 'ground' && !kam.banished && !kam.closing && kam.t >= KAMUI.banishAfter) {
+      kam.banished = true; kam.autoClose = 0.5;
+      kamMakeHole(kam.pos.x, kam.pos.z);
+      kamSendObject('stone');
+    }
+    if (kam.banished && !kam.closing) {
+      kam.autoClose -= dt;
+      if (kam.autoClose <= 0) releaseKamui();
+    }
+    var openP = Math.min(1, kam.t / KAMUI.openTime);
+    kam.open = easeOut(openP) * (kam.closing ? Math.max(0, 1 - kam.close / KAMUI.closeTime) : 1);
+    // space is pulled in more and more the longer you hold
+    kam.strength = (1 - Math.exp(-kam.t / KAMUI.suckTime));
+    if (kam.closing) kam.strength *= Math.max(0, 1 - kam.close / KAMUI.closeTime);
+
+    // Debris orbits inward: radius shrinks, angular speed goes up near the center
+    camera.updateMatrixWorld();
+    kamRight.setFromMatrixColumn(camera.matrixWorld, 0);
+    kamUp.setFromMatrixColumn(camera.matrixWorld, 1);
+    var arr = kamPts.geometry.attributes.position.array, R = KAMUI.radius * kam.open;
+    for (var i = 0; i < kamPtData.length; i++) {
+      var d = kamPtData[i];
+      d.r -= dt * d.sp * (0.12 + 0.5 * kam.strength);
+      if (d.r < 0.03) { d.r = 1; d.a = Math.random() * 6.283; d.sp = 0.6 + Math.random() * 1.2; }
+      d.a += dt * (1.2 + 5 * (1 - d.r)) * (0.6 + kam.strength * 1.5);
+      var rr = d.r * R * 0.95;
+      arr[i * 3]     = kam.pos.x + (kamRight.x * Math.cos(d.a) + kamUp.x * Math.sin(d.a)) * rr;
+      arr[i * 3 + 1] = kam.pos.y + (kamRight.y * Math.cos(d.a) + kamUp.y * Math.sin(d.a)) * rr;
+      arr[i * 3 + 2] = kam.pos.z + (kamRight.z * Math.cos(d.a) + kamUp.z * Math.sin(d.a)) * rr;
+    }
+    kamPts.geometry.attributes.position.needsUpdate = true;
+    kamPts.visible = kam.open > 0.05;
+  }
+
+
+  // ---- Things kamui'd into the dimension (a block of floor, a chunk of cloud) fall on whoever is inside
+  var kamStock = [], kamHoles = [], kamBlocks = [];
+  var KAM_BLOCK = { stone: { size: 2.4, damage: 30 }, cloud: { size: 3.6, damage: 18 } };
+  function kamMakeHole(x, z) {
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 3.4), new THREE.MeshBasicMaterial({ color: 0x000000, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+    m.rotation.x = -Math.PI / 2; m.position.set(x, 0.05, z); scene.add(m);
+    kamHoles.push({ m: m, t: KAMUI.banishTime });
+  }
+  function kamSendObject(kind) {
+    var inside = Object.keys(peers).filter(function (id) { return peers[id].inDim; })[0];
+    if (inside) {
+      postRoom('kamuiDrop', { targetId: inside, kind: kind });
+      showToast((kind === 'cloud' ? 'A cloud' : 'A block of floor') + ' falls on them in the Kamui dimension', 1800);
+    } else {
+      if (kamStock.length < 3) kamStock.push(kind);
+      showToast((kind === 'cloud' ? 'Cloud' : 'Block of floor') + ' stored in the Kamui dimension (' + kamStock.length + ')', 1800);
+    }
+  }
+  // Stored objects drop onto the next player pulled into the dimension
+  function kamFlushStock(targetId) {
+    var items = kamStock.splice(0, kamStock.length);
+    items.forEach(function (kind, i) {
+      setTimeout(function () { postRoom('kamuiDrop', { targetId: targetId, kind: kind }); }, 1400 + i * 900);
+    });
+  }
+  function kamDropBlock(kind) {
+    if (!kamDim.inside) return;
+    var def = KAM_BLOCK[kind] || KAM_BLOCK.stone, size = def.size;
+    var geo = new THREE.BoxGeometry(size, size, size), mats;
+    if (kind === 'cloud') {
+      var cm = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x69727e });
+      mats = [cm, cm, cm, cm, cm, cm];
+    } else {
+      var side = new THREE.MeshLambertMaterial({ color: 0x6b5a46 }), top = new THREE.MeshLambertMaterial({ color: 0x6fbf5a });
+      mats = [side, side, top, side, side, side];
+    }
+    var x = player.position.x + (Math.random() - 0.5) * 0.8, z = player.position.z + (Math.random() - 0.5) * 0.8;
+    var m = new THREE.Mesh(geo, mats);
+    m.position.set(x, 30, z); m.rotation.set(Math.random() * 0.4, Math.random() * 3, Math.random() * 0.4);
+    scene.add(m);
+    var sh = new THREE.Mesh(new THREE.CircleGeometry(size * 0.8, 28), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0, depthWrite: false }));
+    sh.rotation.x = -Math.PI / 2; sh.position.set(x, 0.06, z); scene.add(sh);
+    kamBlocks.push({ m: m, sh: sh, x: x, z: z, vy: 0, size: size, dmg: def.damage, landed: false, t: 0 });
+    showToast('Something is falling!', 900);
+  }
+  function kamRemoveBlock(b) {
+    scene.remove(b.m); scene.remove(b.sh);
+    b.m.geometry.dispose(); b.sh.geometry.dispose(); b.sh.material.dispose();
+    (Array.isArray(b.m.material) ? b.m.material : [b.m.material]).forEach(function (mt) { mt.dispose(); });
+  }
+  function kamClearBlocks() { kamBlocks.forEach(kamRemoveBlock); kamBlocks.length = 0; }
+  function kamBlocksUpdate(dt) {
+    for (var i = kamBlocks.length - 1; i >= 0; i--) {
+      var b = kamBlocks[i];
+      b.t += dt;
+      if (!b.landed) {
+        b.vy -= 34 * dt;
+        b.m.position.y += b.vy * dt;
+        b.m.rotation.x += dt * 0.4; b.m.rotation.z += dt * 0.3;
+        b.sh.material.opacity = Math.min(0.6, b.t * 0.5);
+        if (b.m.position.y - b.size / 2 <= 0) {
+          b.landed = true; b.t = 0;
+          b.m.position.y = b.size / 2; b.m.rotation.set(0, b.m.rotation.y, 0);
+          var dx = player.position.x - b.x, dz = player.position.z - b.z;
+          if (kamDim.inside && Math.sqrt(dx * dx + dz * dz) < b.size * 0.5 + 0.7 && player.position.y < b.size) {
+            hurtPlayer(b.dmg);
+            vel.y = Math.max(vel.y, 0); vel.x = 0; vel.z = 0;
+          }
+          if (typeof spawnDust === 'function') {
+            for (var di = 0; di < 12; di++) {
+              var da = di / 12 * Math.PI * 2;
+              spawnDust(b.x + Math.cos(da) * 1.2, 0.3, b.z + Math.sin(da) * 1.2, 1.8, 0.8, Math.cos(da) * 4, 1, Math.sin(da) * 4);
+            }
+          }
+        }
+      } else if (b.t > 6) {
+        kamRemoveBlock(b); kamBlocks.splice(i, 1);
+      }
+    }
+  }
+
+  // ---- The Kamui dimension: a dark space of huge glowing-edged blocks, far from the arena
+  var DIM_Z = 3000, DIM_RADIUS = 16;
+  var kamDim = { built: false, inside: false, phase: '', t: 0, dur: 5, group: null, ret: new THREE.Vector3(), prevBg: null, prevFog: null, left: 0 };
+  var kamFade = document.createElement('div');
+  kamFade.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;background:#000;opacity:0;pointer-events:none;z-index:40;transition:opacity .3s';
+  document.body.appendChild(kamFade);
+
+  function buildKamuiDimension() {
+    var g = new THREE.Group(), seed = 7;
+    function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+    var sideA = new THREE.MeshBasicMaterial({ color: 0x1a2536 }), sideB = new THREE.MeshBasicMaterial({ color: 0x0a0f18 });
+    var top = new THREE.MeshBasicMaterial({ color: 0x4b617a }), bottom = new THREE.MeshBasicMaterial({ color: 0x03060b });
+    var faces = [sideB, sideB, top, bottom, sideA, sideA];
+    var edgeMat = new THREE.LineBasicMaterial({ color: 0x9ec3e8, transparent: true, opacity: 0.6 });
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.MeshBasicMaterial({ color: 0x060a11 }));
+    floor.rotation.x = -Math.PI / 2; floor.position.set(0, -0.04, DIM_Z);
+    g.add(floor);
+    for (var i = 0; i < 190; i++) {
+      var ang = rnd() * Math.PI * 2, rad = DIM_RADIUS + 5 + Math.pow(rnd(), 0.8) * 170;
+      var w = 4 + rnd() * 12, dd = 4 + rnd() * 12, h = (rad < 40 ? 1.5 + rnd() * 9 : 3 + rnd() * 38);
+      var geo = new THREE.BoxGeometry(w, h, dd);
+      var m = new THREE.Mesh(geo, faces);
+      m.position.set(Math.cos(ang) * rad, h / 2, DIM_Z + Math.sin(ang) * rad);
+      m.rotation.y = Math.round(rnd() * 3) * 0.12;
+      m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMat));
+      g.add(m);
+    }
+    g.visible = false;
+    scene.add(g);
+    kamDim.group = g; kamDim.built = true;
+  }
+
+  function enterKamuiDimension(seconds) {
+    if (kamDim.phase) return;
+    stopKamui();
+    kamDim.dur = Math.max(1, Number(seconds) || KAMUI.banishTime);
+    kamDim.phase = 'enter'; kamDim.t = 0;
+    kamFade.style.opacity = '1';
+  }
+
+  function kamDimUpdate(dt) {
+    kamBlocksUpdate(dt);
+    if (!kamDim.phase) return;
+    kamDim.t += dt;
+    if (kamDim.phase === 'enter' && kamDim.t >= 0.32) {
+      if (!kamDim.built) buildKamuiDimension();
+      kamDim.ret.copy(player.position);
+      player.position.set(0, 0, DIM_Z); vel.set(0, 0, 0); onGround = true;
+      kamDim.prevBg = scene.background; kamDim.prevFog = scene.fog;
+      scene.background = new THREE.Color(0x03060c); scene.fog = new THREE.Fog(0x03060c, 25, 170);
+      kamDim.group.visible = true; kamDim.inside = true;
+      kamDim.phase = 'in'; kamDim.t = 0; kamDim.left = Math.ceil(kamDim.dur);
+      kamFade.style.opacity = '0';
+      showToast('Kamui dimension · ' + kamDim.left + 's', 1100);
+    } else if (kamDim.phase === 'in') {
+      var left = Math.ceil(kamDim.dur - kamDim.t);
+      if (left !== kamDim.left && left > 0) { kamDim.left = left; showToast('Kamui dimension · ' + left + 's', 1100); }
+      // stay inside the open space in the middle of the blocks
+      var dx = player.position.x, dz = player.position.z - DIM_Z, dr = Math.sqrt(dx * dx + dz * dz);
+      if (Math.abs(dz) > 500) kamDim.t = kamDim.dur; // knocked out and respawned: leave the dimension
+      if (dr > DIM_RADIUS) { player.position.x = dx / dr * DIM_RADIUS; player.position.z = DIM_Z + dz / dr * DIM_RADIUS; }
+      if (player.position.y <= 0) { player.position.y = 0; vel.y = 0; onGround = true; }
+      if (kamDim.t >= kamDim.dur) { kamDim.phase = 'exit'; kamDim.t = 0; kamFade.style.opacity = '1'; }
+    } else if (kamDim.phase === 'exit' && kamDim.t >= 0.32) {
+      player.position.copy(kamDim.ret); vel.set(0, 0, 0); onGround = true;
+      scene.background = kamDim.prevBg; scene.fog = kamDim.prevFog;
+      kamDim.group.visible = false; kamDim.inside = false;
+      kamClearBlocks();
+      kamDim.phase = ''; kamFade.style.opacity = '0';
+    }
+  }
+
+  // Draws the frame: with vortices open, the scene is rendered offscreen and warped around them
+  var kamLastT = 0;
+  function projectKamui(pos, open, strength, out) {
+    kamNdc.copy(pos).project(camera);
+    if (kamNdc.z >= 1 || kamNdc.z <= -1 || Math.abs(kamNdc.x) > 1.7 || Math.abs(kamNdc.y) > 1.7) return false;
+    kamNdc2.copy(pos).addScaledVector(kamRight, KAMUI.radius).project(camera);
+    var rad = Math.min(Math.abs(kamNdc2.x - kamNdc.x) * 0.5 * camera.aspect, 0.75);
+    out.set(kamNdc.x * 0.5 + 0.5, kamNdc.y * 0.5 + 0.5, rad * open, strength);
+    return true;
+  }
+  function renderFrame() {
+    var nowT = performance.now(), dtR = Math.min(0.1, (nowT - (kamLastT || nowT)) / 1000); kamLastT = nowT;
+    var n = 0;
+    if (kamRT) {
+      camera.updateMatrixWorld();
+      kamRight.setFromMatrixColumn(camera.matrixWorld, 0);
+      if (kam.active && projectKamui(kam.pos, kam.open, kam.strength, kamV[n])) n++;
+      Object.keys(remoteKamui).forEach(function (id) {
+        var rk = remoteKamui[id];
+        var k = Math.min(1, dtR * 12);
+        rk.pos.lerp(rk.tpos, k); rk.open += (rk.topen - rk.open) * k; rk.strength += (rk.tstrength - rk.strength) * k;
+        if (n < 3 && peerMeshes[id] && projectKamui(rk.pos, rk.open, rk.strength, kamV[n])) n++;
+      });
+    }
+    if (!n) { renderer.render(scene, camera); return; }
+    kamUniforms.uVN.value = n;
+    kamUniforms.uAspect.value = camera.aspect;
+    kamUniforms.uPull.value = KAMUI.pull;
+    kamUniforms.uTwist.value = KAMUI.twist;
+    kamUniforms.uTime.value = nowT / 1000 * KAMUI.spin;
+    renderer.setRenderTarget(kamRT);
+    renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+    kamUniforms.tScene.value = kamRT.texture;
+    renderer.render(kamScene, kamCam);
   }
 
   // ---------------------------------------------------------------- Dummy pistol + player health
@@ -3284,8 +4023,8 @@ body {
     }
   }
 
-  // ---------------------------------------------------------------- Clone (V, needs the Sharingan, with or without the Mangekyou)
-  // Your body stays behind as a decoy and you walk around invisible. Press V again, or let the
+  // ---------------------------------------------------------------- Clone (C, needs the Sharingan, with or without the Mangekyou)
+  // Your body stays behind as a decoy and you walk around invisible. Press C again, or let the
   // body get destroyed, and you reappear while the old body bursts into crows that fly away.
   // Clone settings (also reachable from the console as game.clone)
   var CLONE = {
@@ -3571,14 +4310,20 @@ body {
   CD.ct = CHIBAKU.cooldown;
 
   var rinnOn = false, rinnAnim = null;
+  var katanaStorm = { active: false, channeling: false, t: 0, stopAt: 5, targetId: null, seed: 0,
+    targetPos: new THREE.Vector3(), originPos: new THREE.Vector3() };
+  var katanaStormVisuals = {};
   var slot3El = document.getElementById('slot3');
   var abCTEl = document.getElementById('abCT');
+  var abKSEl = document.getElementById('abKS');
   var ctChargeEl = document.querySelector('#abCT .charge');
 
   function syncEyePanel() {
     abilitiesEyeEl.classList.toggle('on', eyeOn || rinnOn);
     abFEl.hidden = !eyeOn;
+    abF2El.hidden = !eyeOn;
     abCTEl.hidden = !rinnOn;
+    abKSEl.hidden = !rinnOn;
     ui.st.card.hidden = !rinnOn;
   }
 
@@ -3618,6 +4363,141 @@ body {
       pl.rinn.material.opacity = Math.min(1, p * 1.8);
     });
     if (p >= 1) rinnAnim = null;
+  }
+
+  // Rinnegan Katana Storm: a deterministic, channelled stream of swords is simulated on every client.
+  var STORM_SWORD_COUNT = 18, STORM_SWORD_INTERVAL = 0.2;
+  var stormBladeGeo = new THREE.CylinderGeometry(0.004, 0.07, 1.25, 5);
+  var stormEdgeGeo = new THREE.BoxGeometry(0.018, 1.12, 0.018);
+  var stormGuardGeo = new THREE.BoxGeometry(0.3, 0.065, 0.12);
+  var stormHandleGeo = new THREE.CylinderGeometry(0.045, 0.05, 0.5, 6);
+  var stormBladeMat = new THREE.MeshStandardMaterial({ color: 0xbfcbd5, metalness: 0.88, roughness: 0.24 });
+  var stormEdgeMat = new THREE.MeshStandardMaterial({ color: 0xf4f7fa, metalness: 0.82, roughness: 0.18 });
+  var stormGuardMat = new THREE.MeshStandardMaterial({ color: 0x727d87, metalness: 0.78, roughness: 0.3 });
+  var stormHandleMat = new THREE.MeshStandardMaterial({ color: 0x262c33, metalness: 0.35, roughness: 0.55 });
+  var stormSwordUp = new THREE.Vector3(0, 1, 0);
+  function makeStormSword() {
+    var sword = new THREE.Group();
+    var blade = new THREE.Mesh(stormBladeGeo, stormBladeMat); blade.position.y = 0.34; blade.castShadow = true;
+    var edge = new THREE.Mesh(stormEdgeGeo, stormEdgeMat); edge.position.set(0.045, 0.34, 0.035);
+    var guard = new THREE.Mesh(stormGuardGeo, stormGuardMat); guard.position.y = -0.3;
+    var grip = new THREE.Mesh(stormHandleGeo, stormHandleMat); grip.position.y = -0.57;
+    sword.add(blade, edge, guard, grip);
+    return sword;
+  }
+  function stormRandom(seed) {
+    var value = (Number(seed) >>> 0) || 1;
+    return function () { value = (Math.imul(value, 1664525) + 1013904223) >>> 0; return value / 4294967296; };
+  }
+  function removeKatanaStormVisual(key) {
+    var visual = katanaStormVisuals[key];
+    if (!visual) return;
+    scene.remove(visual.group);
+    delete katanaStormVisuals[key];
+  }
+  function setKatanaStormVisual(key, data, remote) {
+    if (!data || !data.targetPos || !data.originPos) return;
+    var seed = (Number(data.seed) >>> 0) || 1, visual = katanaStormVisuals[key];
+    if (!visual || visual.seed !== seed) {
+      removeKatanaStormVisual(key);
+      var group = new THREE.Group(), paths = [], rand = stormRandom(seed);
+      for (var i = 0; i < STORM_SWORD_COUNT; i++) {
+        var angle = rand() * Math.PI * 2, vertical = rand() * 2 - 1, horizontal = Math.sqrt(1 - vertical * vertical);
+        var startOffset = new THREE.Vector3(Math.cos(angle) * horizontal, vertical, Math.sin(angle) * horizontal).multiplyScalar(8 + rand() * 6);
+        if (Number(data.originPos[1]) + startOffset.y < 0.65) startOffset.y = 0.65 - Number(data.originPos[1]) + rand() * 1.5;
+        var sword = makeStormSword(); sword.visible = false; group.add(sword);
+        paths.push({ sword: sword, startOffset: startOffset,
+          endOffset: new THREE.Vector3((rand() - 0.5) * 1.1, (rand() - 0.5) * 1.5, (rand() - 0.5) * 0.8),
+          curve: new THREE.Vector3((rand() - 0.5) * 4.5, (rand() - 0.35) * 3.8, (rand() - 0.5) * 4.5),
+          spawnAt: i * STORM_SWORD_INTERVAL, flight: 0.62 + rand() * 0.32, roll: rand() * Math.PI * 2, hit: false,
+          from: new THREE.Vector3(), to: new THREE.Vector3(), control: new THREE.Vector3(), dir: new THREE.Vector3() });
+      }
+      scene.add(group);
+      visual = katanaStormVisuals[key] = { group: group, paths: paths, seed: seed, t: 0, stopAt: 5, syncedAt: 0,
+        remote: !!remote, target: new THREE.Vector3(), origin: new THREE.Vector3() };
+    }
+    visual.origin.fromArray(data.originPos); visual.target.fromArray(data.targetPos);
+    visual.t = Math.max(0, Number(data.t) || 0);
+    visual.stopAt = data.stopAt == null ? 5 : Math.max(0, Math.min(5, Number(data.stopAt) || 0));
+    visual.syncedAt = performance.now(); visual.remote = !!remote;
+  }
+  function updateKatanaStormVisuals() {
+    Object.keys(katanaStormVisuals).forEach(function (key) {
+      var visual = katanaStormVisuals[key];
+      var age = visual.t + (visual.remote ? (performance.now() - visual.syncedAt) * 0.001 : 0);
+      if (age >= 5) { removeKatanaStormVisual(key); return; }
+      visual.paths.forEach(function (path) {
+        if (path.spawnAt > visual.stopAt || age < path.spawnAt) { path.sword.visible = false; return; }
+        path.sword.visible = true;
+        var from = path.from.copy(visual.origin).add(path.startOffset);
+        var to = path.to.copy(visual.target).add(path.endOffset);
+        var control = path.control.copy(from).lerp(to, 0.5).add(path.curve);
+        var flightAge = age - path.spawnAt;
+        var progress = Math.min(1, flightAge / path.flight), u = 1 - Math.pow(1 - progress, 2.2), inv = 1 - u;
+        path.sword.position.set(
+          from.x * inv * inv + control.x * 2 * inv * u + to.x * u * u,
+          from.y * inv * inv + control.y * 2 * inv * u + to.y * u * u,
+          from.z * inv * inv + control.z * 2 * inv * u + to.z * u * u
+        );
+        path.dir.set(
+          2 * inv * (control.x - from.x) + 2 * u * (to.x - control.x),
+          2 * inv * (control.y - from.y) + 2 * u * (to.y - control.y),
+          2 * inv * (control.z - from.z) + 2 * u * (to.z - control.z)
+        );
+        if (path.dir.lengthSq() > 0.0001) path.sword.quaternion.setFromUnitVectors(stormSwordUp, path.dir.normalize());
+        if (progress < 1) path.sword.rotateY(path.roll + flightAge * 1.8);
+      });
+    });
+  }
+  function katanaStormTargetPosition(targetId) {
+    if (targetId === 'dummy') {
+      if (dummy.dead) return null;
+      return new THREE.Vector3(dummy.root.position.x, dummy.root.position.y + 1.9, dummy.root.position.z);
+    }
+    var peer = peers[targetId];
+    if (!peer) return null;
+    var pos = roomTargetPosition(peer);
+    return new THREE.Vector3(pos.x, pos.y + 1.3, pos.z);
+  }
+  function startKatanaStorm() {
+    if (!rinnOn || katanaStorm.active) return;
+    var targetId = aimedPeerId && peers[aimedPeerId] ? aimedPeerId : (cursorOnDummy && !dummy.dead ? 'dummy' : null);
+    var target = targetId && katanaStormTargetPosition(targetId);
+    if (!target) { showToast('Put your cursor over a target'); return; }
+    katanaStorm.active = true; katanaStorm.channeling = true; katanaStorm.t = 0; katanaStorm.stopAt = 5; katanaStorm.targetId = targetId;
+    katanaStorm.seed = Math.floor(Math.random() * 2147483646) + 1;
+    katanaStorm.targetPos.copy(target); katanaStorm.originPos.copy(target);
+    abKSEl.classList.add('holding'); glowT = GLOW_DUR;
+  }
+  function updateKatanaStorm(dt) {
+    if (katanaStorm.active) {
+      katanaStorm.t += dt;
+      if (katanaStorm.channeling && (!held('katana storm') || !rinnOn)) {
+        katanaStorm.channeling = false; katanaStorm.stopAt = katanaStorm.t;
+        abKSEl.classList.remove('holding');
+      }
+      var currentTarget = katanaStormTargetPosition(katanaStorm.targetId);
+      if (currentTarget) katanaStorm.targetPos.copy(currentTarget);
+      var localVisual = katanaStormVisuals['local:' + playerId];
+      if (localVisual) localVisual.paths.forEach(function (path) {
+        if (!path.hit && path.spawnAt <= katanaStorm.stopAt && katanaStorm.t >= path.spawnAt + path.flight) {
+          path.hit = true;
+          if (katanaStorm.targetId === 'dummy') {
+            if (!dummy.dead) dummy.damage(2);
+          } else if (peers[katanaStorm.targetId]) {
+            sendAction('Rinnegan Katana Storm', { origin: katanaStorm.targetPos.toArray(), mode: 'radial', range: 1, radius: 1,
+              damage: 2, targetIds: [katanaStorm.targetId], duration: 0.08 });
+          }
+        }
+      });
+      if (katanaStorm.t >= 5) {
+        katanaStorm.active = false; katanaStorm.channeling = false; abKSEl.classList.remove('holding'); removeKatanaStormVisual('local:' + playerId);
+      } else {
+        setKatanaStormVisual('local:' + playerId, { seed: katanaStorm.seed, t: katanaStorm.t,
+          stopAt: katanaStorm.stopAt, originPos: katanaStorm.originPos.toArray(), targetPos: katanaStorm.targetPos.toArray() }, false);
+      }
+    }
+    updateKatanaStormVisuals();
   }
 
   var rockGeos = [new THREE.BoxGeometry(1, 1, 1), new THREE.BoxGeometry(1.3, 0.8, 1), new THREE.BoxGeometry(0.9, 1.2, 0.8)];
@@ -4007,7 +4887,7 @@ body {
           eyeAnim = null;
         }
       } else {
-        eyePlanes.forEach(function (pl) { (mangOn ? pl.mang : pl.shar).rotation.z = spin; });
+        eyePlanes.forEach(function (pl) { pl[mangOn ? 'mang' : 'shar'].rotation.z = spin; });
       }
     }
 
@@ -4323,10 +5203,13 @@ body {
     if (isKey(k, 'pistol')) equipPistol(!pistolEquipped);
     if (isKey(k, 'sharingan')) setSharingan(!eyeOn);
     if (isKey(k, 'rinnegan')) setRinnegan(!rinnOn);
-    if (isKey(k, 'mangekyou')) toggleMangekyou();
+    if (isKey(k, 'itachi mangekyou')) toggleMangekyou('itachi');
+    if (isKey(k, 'obito mangekyou')) toggleMangekyou('obito');
+    if (isKey(k, 'katana storm') && rinnOn) startKatanaStorm();
     if (isKey(k, 'chibaku tensei') && rinnOn) startChibaku();
     if (isKey(k, 'tsukuyomi') && !rinnOn) startTsukuyomi();
     if (isKey(k, 'amaterasu') && !rinnOn) startAmaterasu();
+    if (isKey(k, 'long range kamui') && !rinnOn) startKamui();
     if (isKey(k, 'shinra tensei') && rinnOn) startShinra();
     if (isKey(k, 'revolving ravager')) startTornado();
     var summoned = false;
@@ -4344,6 +5227,7 @@ body {
     if (isKey(k, 'slayer of goliath')) releaseDash();
     if (isKey(k, 'chibaku tensei')) releaseChibaku();
     if (isKey(k, 'shinra tensei')) releaseShinra();
+    if (isKey(k, 'long range kamui')) releaseKamui();
   });
   window.addEventListener('blur', function () {
     keys = {};
@@ -4351,6 +5235,7 @@ body {
     cancelHeld();
     releaseChibaku();
     releaseShinra();
+    releaseKamui();
   });
 
   // Track the cursor for aiming
@@ -4387,6 +5272,7 @@ body {
   function resize() {
     var w = window.innerWidth, h = window.innerHeight;
     renderer.setSize(w, h, false);
+    if (kamRT) kamRT.setSize(Math.max(2, Math.floor(w * renderer.getPixelRatio())), Math.max(2, Math.floor(h * renderer.getPixelRatio())));
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
@@ -4408,6 +5294,7 @@ body {
     var dt = Math.min(clock.getDelta(), 0.05);
 
     updateAim();
+    updateKatanaStorm(dt);
     syncRoom(dt);
 
     // Cooldowns
@@ -4418,6 +5305,7 @@ body {
     cd.v = Math.max(0, cd.v - dt);
     cd.ct = Math.max(0, cd.ct - dt);
     cd.st = Math.max(0, cd.st - dt);
+    cd.k = Math.max(0, cd.k - dt);
     atk.cd = Math.max(0, atk.cd - dt);
     qd.cd = Math.max(0, qd.cd - dt);
     if (qd.active) {
@@ -4551,6 +5439,7 @@ body {
     } else if (player.position.y < -0.05 || !overPlatform) {
       onGround = false;
     }
+    if (kamDim.inside && player.position.y <= 0) { player.position.y = 0; vel.y = 0; onGround = true; }
     if (incomingShinraFlight.active && overPlatform && player.position.y === 0 && vel.y === 0) {
       var landingDamage = incomingShinraFlight.landDamage;
       incomingShinraFlight.active = false; incomingShinraFlight.landDamage = 0;
@@ -4570,6 +5459,7 @@ body {
     updateQFx(dt);
     updateTsukuyomi(dt);
     updateAmaterasu(dt);
+    updateKamui(dt);
     updateGun(dt, roomActive && !isRoomHost);
     updateClone(dt);
     updateChibaku(dt);
@@ -4724,8 +5614,7 @@ body {
 
     updateSharingan(dt);
     updateTeleportBlur();
-
-    renderer.render(scene, camera);
+    renderFrame();
   }
   frame();
 })();
